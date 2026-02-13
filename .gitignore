@@ -1,0 +1,15 @@
+# Secrets
+credentials.json
+.env
+
+# Local Logs (Non-anonymized data)
+*.csv
+game_logs_fallback.csv
+feedback_logs_fallback.csv
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
