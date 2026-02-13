@@ -1,0 +1,73 @@
+prolific_id,round,batch_num,scenario_id,scenario_name,assessment,action,seq_score,ai_used,text_changed,ai_assessment_text,user_assessment_final,timestamp
+0001,1,3,6,6: Temp & Yeast,SG too high,Fix Temperature Controller,4,True,False,"Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.",SG too high,2026-02-13T18:40:17.754616
+0001,2,4,3,3: Yeast Health Issue,"SG still high
+",Pitch New/Healthy Yeast,4,True,True,,"SG still high
+",2026-02-13T18:40:57.916067
+001,1,3,6,6: Temp & Yeast,"SG is high and Wort temp is high
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",Fix Temperature Controller,3,True,True,"Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.","SG is high and Wort temp is high
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",2026-02-13T19:38:28.589635
+001,2,4,3,3: Yeast Health Issue,Situation is improving,Pitch New/Healthy Yeast,2,True,False,,Situation is improving,2026-02-13T19:39:14.555318
+001,1,3,6,6: Temp & Yeast,"SG and C are high
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",Pitch New/Healthy Yeast,4,True,True,"Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.","SG and C are high
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",2026-02-13T19:43:26.698482
+001,2,4,2,2: Temp Control Fail,C is still high,Sterilize Equipment,4,True,False,,C is still high,2026-02-13T19:44:04.108564
+001,3,5,2,2: Temp Control Fail,Nothing happened,Improve Oxygen Management,4,True,False,,Nothing happened,2026-02-13T19:44:26.786106
+001,4,6,2,2: Temp Control Fail,I will do the right thing,Fix Temperature Controller,4,True,False,,I will do the right thing,2026-02-13T19:44:51.452130
+002,1,3,6,6: Temp & Yeast,"SG is high and C is high too
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",Improve Oxygen Management,3,True,True,"Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.","SG is high and C is high too
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",2026-02-13T20:03:48.084586
+002,2,4,6,6: Temp & Yeast,"SG is still high
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",Pitch New/Healthy Yeast,3,True,True,"Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.","SG is still high
+
+AI: Extremely slow or no SG drop, indicating fermentation is stuck. CO2 activity is almost zero. Wort temp is too high, which stresses the yeast. This combination points to a failure in both temperature control and a severely underperforming or unhealthy yeast pitch.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",2026-02-13T20:04:40.194025
+002,3,5,2,2: Temp Control Fail,C is still high,Fix Temperature Controller,2,True,False,,C is still high,2026-02-13T20:06:12.536056
+003,1,3,6,6: Temp & Yeast,Sg is high,Sterilize Equipment,2,True,False,"Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.",Sg is high,2026-02-13T20:24:57.920768
+004,1,3,6,6: Temp & Yeast,all good,Improve Oxygen Management,4,True,False,"Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.",all good,2026-02-13T20:53:48.717456
+003,1,3,6,6: Temp & Yeast,"SG is high
+
+AI: Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",Improve Oxygen Management,2,True,True,"Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.","SG is high
+
+AI: Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",2026-02-13T21:05:14.918242
+003,2,4,6,6: Temp & Yeast,SG still high,Sterilize Equipment,4,False,False,"Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.",SG still high,2026-02-13T21:05:30.152965
+003,3,5,6,6: Temp & Yeast,SG still high,Pitch New/Healthy Yeast,4,False,False,"Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.",SG still high,2026-02-13T21:06:10.690492
+003,4,6,2,2: Temp Control Fail,SG still high. C high,Pitch New/Healthy Yeast,3,False,False,Wort Temp: High (25.5°C). CO2: Very High. SG: Dropping normally. High temp accelerates fermentation but produces off-flavors.,SG still high. C high,2026-02-13T21:06:32.271954
+003,5,7,2,2: Temp Control Fail,"What else ?
+
+AI: Wort Temp: High (25.5°C). CO2: Very High. SG: Dropping normally. High temp accelerates fermentation but produces off-flavors.
+Rec: Fix Temperature Controller",Fix Temperature Controller,4,True,True,Wort Temp: High (25.5°C). CO2: Very High. SG: Dropping normally. High temp accelerates fermentation but produces off-flavors.,"What else ?
+
+AI: Wort Temp: High (25.5°C). CO2: Very High. SG: Dropping normally. High temp accelerates fermentation but produces off-flavors.
+Rec: Fix Temperature Controller",2026-02-13T21:06:53.809165
+003,6,7,1,1: All Good,Simulation Complete,None,0,False,False,All sensors report normal readings within their ideal fermentation ranges. The process appears stable and healthy.,COMPLETED,2026-02-13T21:06:57.984124
+007,1,3,6,6: Temp & Yeast,"SG is high
+
+AI: Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",Fix Temperature Controller,1,True,True,"Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.","SG is high
+
+AI: Extremely slow or no SG drop, low CO2, high temp. The yeast is stressed by heat and poor health.
+Rec: Fix Temperature Controller; Pitch New/Healthy Yeast",61.99,2026-02-13T21:24:11.668726
+007,2,4,3,3: Yeast Health Issue,"Co2 still low
+
+AI: SG: High (1.045). CO2: Very Low. Wort Temp: Low side. Hints at unhealthy yeast that's failing to start fermentation.
+Rec: Pitch New/Healthy Yeast",Pitch New/Healthy Yeast,1,True,True,SG: High (1.045). CO2: Very Low. Wort Temp: Low side. Hints at unhealthy yeast that's failing to start fermentation.,"Co2 still low
+
+AI: SG: High (1.045). CO2: Very Low. Wort Temp: Low side. Hints at unhealthy yeast that's failing to start fermentation.
+Rec: Pitch New/Healthy Yeast",61.99,2026-02-13T21:24:41.080354
+007,3,4,1,1: All Good,Simulation Complete,None,0,False,False,All sensors report normal readings within their ideal fermentation ranges. The process appears stable and healthy.,COMPLETED,61.99,2026-02-13T21:24:45.242525
