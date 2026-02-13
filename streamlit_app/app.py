@@ -398,11 +398,17 @@ def render_end():
                     'tutorial_duration_seconds': st.session_state.get('tutorial_duration_seconds', 0),
                     'feedback_text': feedback_text
                 })
+                
+                # Always hide form after submission attempt
+                st.session_state.feedback_submitted = True
+                
                 if success:
-                    st.session_state.feedback_submitted = True
-                    st.rerun()
+                    st.success("Thank you for your feedback!")
                 else:
-                    st.warning("Feedback saved locally.")
+                    st.warning("Feedback saved locally (Cloud sync failed).")
+                
+                # Rerun to update UI (hide form)
+                st.rerun()
 
 
 # --- MAIN ---

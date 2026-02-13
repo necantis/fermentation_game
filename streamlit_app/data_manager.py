@@ -16,20 +16,39 @@ CREDENTIALS_FILE = "credentials.json"
 LOCAL_LOG_FILE = "game_logs_fallback.csv"
 
 def connect_to_gsheet():
-    """Connect to Google Sheets using credentials.json."""
-    if not os.path.exists(CREDENTIALS_FILE):
-        return None
-    
+    """
+    Connect to Google Sheets using st.secrets (Cloud) or credentials.json (Local).
+    """
+    # 1. Try Streamlit Secrets (Cloud / production)
     try:
-        creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPE)
-        client = gspread.authorize(creds)
-        spreadsheet = client.open(SHEET_NAME)
-        # Assume logging to the first sheet or specific worksheet
-        worksheet = spreadsheet.sheet1 
-        return worksheet
-    except Exception as e:
-        print(f"GSheet Connection Error: {e}")
-        return None
+        if "gcp_service_account" in st.secrets:
+            try:
+                # Create credentials from the secrets dict
+                creds_dict = dict(st.secrets["gcp_service_account"])
+                creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
+                client = gspread.authorize(creds)
+                spreadsheet = client.open(SHEET_NAME)
+                return spreadsheet.sheet1
+            except Exception as e:
+                print(f"GSheet Connection Error (Secrets): {e}")
+                return None
+    except Exception:
+        # st.secrets access failed (e.g. no secrets.toml found locally)
+        pass
+
+    # 2. Try Local File (credentials.json)
+    if os.path.exists(CREDENTIALS_FILE):
+        try:
+            creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPE)
+            client = gspread.authorize(creds)
+            spreadsheet = client.open(SHEET_NAME)
+            return spreadsheet.sheet1
+        except Exception as e:
+            print(f"GSheet Connection Error (File): {e}")
+            return None
+            
+    print("No valid credentials found.")
+    return None
 
 def log_data(data_dict):
     """
