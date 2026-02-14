@@ -519,15 +519,26 @@ with col_p3:
     # Filter out No AI for this chart
     bubble_data = user_agg[user_agg['cluster'] != 'No AI']
 
-    chart_bubble = alt.Chart(bubble_data).mark_circle().encode(
+    chart_bubble = alt.Chart(bubble_data).mark_point(filled=True, opacity=0.8, size=200).encode(
         x=alt.X('ai_score:Q', title='AI Score (% usage)'),
         y=alt.Y('complexity:Q', title='Avg Complexity'),
-        size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[50, 500])),
-        color=alt.Color('bubble_color:N', scale=None, title='Group'), 
-        tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time']
+        size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[100, 1000])), # Increased size range for visibility
+        color=alt.Color('bubble_color:N', scale=None, title='Group Color'), 
+        shape=alt.Shape('cluster:N', title='Group Shape', scale=alt.Scale(
+            domain=['Copier', 'Needer', 'Improver'], 
+            range=['square', 'circle', 'diamond']
+        )),
+        tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
     ).properties(title="Participant Clusters (Red=Copier, Yellow=Needer, Green=Improver)")
     
     st.altair_chart(chart_bubble, use_container_width=True)
+
+    # Debug Data Table
+    with st.expander("Debug: Check Cluster Classification & Data"):
+        st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
+        st.markdown("Filter Logic: **Copier** (Sim > 0.5), **Needer** (Sim <= 0.5 & Comp < 100), **Improver** (Sim <= 0.5 & Comp >= 100)")
+        debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
+        st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
 # Raw Data
 with st.expander("View Raw Data"):
