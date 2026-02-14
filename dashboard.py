@@ -11,6 +11,11 @@ st.set_page_config(page_title="Fermentation Game Analytics", layout="wide")
 
 st.title("Fermentation Game Analytics")
 st.markdown("### Hypothesis Testing & Data Overview")
+st.info("""
+**Definitions:**
+*   **AI Used**: Classified **per round**. A participant can use AI in round 1 (True) and not in round 2 (False).
+*   **AI Score**: The percentage of rounds where a specific participant used AI.
+""")
 
 # Load Data
 DATA_FILE = "game_logs_fallback.csv"
@@ -217,40 +222,11 @@ st.markdown("**Hypothesis:** Higher AI usage increases task duration.")
 if 'round_duration_seconds' in df.columns and df['round_duration_seconds'].sum() > 0:
     st.subheader("Round Duration vs AI Usage")
     
-    # 1. Split Analysis: Tutorial vs Game Time
-    # Merge feedback (for tutorial time) and logs (for game time)
-    if 'tutorial_duration_seconds' in df.columns:
-        df['is_tutorial'] = df['scenario_id'] == 1 # Assuming scenario 1 is tutorial/demo
-        
-        # Tutorial Time (from Feedback or Scenario 1)
-        # We'll use the per-round metrics. 
-        # Create a view for "Tutorial Rounds" vs "Game Rounds"
-        tutorial_df = df[df['batch_num'] == 1] # First batch/scenario usually tutorial
-        game_df = df[df['batch_num'] > 1]
-        
-        col_t1, col_t2 = st.columns(2)
-        
-        with col_t1:
-            st.markdown("#### Demo/Tutorial Time")
-            if not tutorial_df.empty:
-                st.markdown(calculate_ttest(tutorial_df, 'ai_used', 'round_duration_seconds'))
-                chart_tut = alt.Chart(tutorial_df).mark_boxplot().encode(
-                    x='ai_used:N', y='round_duration_seconds:Q', color='ai_used:N'
-                )
-                st.altair_chart(chart_tut, use_container_width=True)
-            else:
-                st.info("No tutorial data identified.")
-
-        with col_t2:
-            st.markdown("#### Active Game Time")
-            if not game_df.empty:
-                st.markdown(calculate_ttest(game_df, 'ai_used', 'round_duration_seconds'))
-                chart_game = alt.Chart(game_df).mark_boxplot().encode(
-                    x='ai_used:N', y='round_duration_seconds:Q', color='ai_used:N'
-                )
-                st.altair_chart(chart_game, use_container_width=True)
-            else:
-                st.info("No game data identified.")
+    # 1. Average Time per Round (Metric)
+    avg_round_time = df['round_duration_seconds'].mean()
+    st.metric("Global Avg Time per Round", f"{avg_round_time:.2f} s")
+    
+    st.caption("Note: '0' duration bars indicate missing timestamp data in older logs.")
 
     # 2. Stacked Bar Chart (Red/Blue Split)
     st.subheader("Participant Time Breakdown (Red=No AI, Blue=AI)")
@@ -332,19 +308,73 @@ col_h2_1, col_h2_2 = st.columns(2)
 col_h2_1.altair_chart(chart_h2_len, use_container_width=True)
 col_h2_2.altair_chart(chart_h2_comp, use_container_width=True)
 
-# SIMILARITY ANALYSIS
-st.subheader("AI Assimilation: Copiers vs Improvers")
+# SIMILARITY ANALYSIS: Copiers vs Improvers
+st.subheader("Deep Dive: Copiers vs Improvers (Among AI Users)")
 ai_only_df = df[df['ai_used'] == True].copy()
-if not ai_only_df.empty:
-    chart_sim = alt.Chart(ai_only_df).mark_circle(size=60).encode(
-        x=alt.X('ai_similarity:Q', title="Similarity to AI (0=Diff, 1=Copy)"),
-        y=alt.Y('seq_score:Q', title="Score/Difficulty"),
-        color=alt.Color('prolific_id:N'),
-        tooltip=['prolific_id', 'ai_similarity', 'text_len']
-    ).properties(title="Similarity vs Outcome (AI Users)")
-    st.altair_chart(chart_sim, use_container_width=True)
+
+if not ai_only_df.empty and 'ai_similarity' in ai_only_df.columns:
+    # 1. Define Split (Median)
+    median_sim = ai_only_df['ai_similarity'].median()
+    ai_only_df['strategy'] = ai_only_df['ai_similarity'].apply(lambda x: 'Copier (High Sim)' if x > median_sim else 'Improver (Low Sim)')
+    
+    st.markdown(f"**Median Similarity**: {median_sim:.2f}")
+    
+    # 2. Comparison Metrics
+    st.markdown("#### Strategy Comparison (Copiers vs Improvers)")
+    
+    col_s1, col_s2, col_s3 = st.columns(3)
+    
+    with col_s1:
+        st.caption("Complexity")
+        st.markdown(calculate_ttest(ai_only_df, 'strategy', 'complexity', 'Copier (High Sim)', 'Improver (Low Sim)'))
+        chart_s1 = alt.Chart(ai_only_df).mark_boxplot().encode(x='strategy:N', y='complexity:Q', color='strategy:N')
+        st.altair_chart(chart_s1, use_container_width=True)
+        
+    with col_s2:
+        st.caption("Time (Seconds)")
+        st.markdown(calculate_ttest(ai_only_df, 'strategy', 'round_duration_seconds', 'Copier (High Sim)', 'Improver (Low Sim)'))
+        chart_s2 = alt.Chart(ai_only_df).mark_boxplot().encode(x='strategy:N', y='round_duration_seconds:Q', color='strategy:N')
+        st.altair_chart(chart_s2, use_container_width=True)
+
+    with col_s3:
+        st.caption("Perceived Difficulty")
+        st.markdown(calculate_ttest(ai_only_df, 'strategy', 'seq_score', 'Copier (High Sim)', 'Improver (Low Sim)'))
+        chart_s3 = alt.Chart(ai_only_df).mark_boxplot().encode(x='strategy:N', y='seq_score:Q', color='strategy:N')
+        st.altair_chart(chart_s3, use_container_width=True)
+
 else:
     st.info("No AI usage data to analyze similarity.")
+
+# --- PARTICIPANT LEVEL ANALYSIS ---
+st.header("Participant Level Analysis")
+st.markdown("Aggregating metrics by Participant to handle 'AI Score' (% of rounds AI was used).")
+
+# Aggregate
+user_agg = df.groupby('prolific_id').agg({
+    'ai_used': 'mean', # % of rounds used
+    'round_duration_seconds': 'mean',
+    'complexity': 'mean',
+    'seq_score': 'mean',
+    'text_len': 'mean'
+}).reset_index()
+
+user_agg.rename(columns={'ai_used': 'ai_score', 'round_duration_seconds': 'avg_time', 'seq_score': 'avg_difficulty'}, inplace=True)
+
+col_p1, col_p2 = st.columns(2)
+
+with col_p1:
+    st.subheader("AI Score vs Avg Complexity")
+    chart_p1 = alt.Chart(user_agg).mark_circle(size=60).encode(
+        x='ai_score:Q', y='complexity:Q', tooltip=['prolific_id', 'ai_score', 'complexity']
+    ).properties(title="AI Score vs Complexity")
+    st.altair_chart(chart_p1 + chart_p1.transform_regression('ai_score', 'complexity').mark_line(), use_container_width=True)
+
+with col_p2:
+    st.subheader("AI Score vs Avg Time")
+    chart_p2 = alt.Chart(user_agg).mark_circle(size=60).encode(
+        x='ai_score:Q', y='avg_time:Q', tooltip=['prolific_id', 'ai_score', 'avg_time']
+    ).properties(title="AI Score vs Avg Time")
+    st.altair_chart(chart_p2 + chart_p2.transform_regression('ai_score', 'avg_time').mark_line(), use_container_width=True)
 
 
 # --- HYPOTHESIS 3: EFFICIENCY ILLUSION (DIFFICULTY) ---
