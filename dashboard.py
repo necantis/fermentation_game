@@ -269,7 +269,7 @@ if 'round_duration_seconds' in df.columns and df['round_duration_seconds'].sum()
     
     chart_stack_split = alt.Chart(df).mark_bar().encode(
         x=alt.X('prolific_id:N', title='Participant'),
-        y=alt.Y('round_duration_seconds:Q', title='Duration (s)'),
+        y=alt.Y('round_duration_seconds:Q', title='Duration (s) [Log Scale]', scale=alt.Scale(type='symlog')),
         color=alt.Color('color_key:N', scale=color_scale, title="State (AI_Round)"),
         column=alt.Column('user_group:N', title="Group"),
         tooltip=['prolific_id', 'round', 'round_duration_seconds', 'ai_used'],
@@ -410,6 +410,18 @@ with col_p3:
         x='ai_score:Q', y='avg_difficulty:Q', tooltip=['prolific_id', 'ai_score', 'avg_difficulty']
     ).properties(title="AI Score vs Avg Difficulty")
     st.altair_chart(chart_p3 + chart_p3.transform_regression('ai_score', 'avg_difficulty').mark_line(), use_container_width=True)
+
+    st.subheader("Bubble Graph: AI Impact (Color=Time)")
+    # X=AI Score, Y=Complexity, Size=Difficulty, Color=Time
+    chart_bubble = alt.Chart(user_agg).mark_circle().encode(
+        x=alt.X('ai_score:Q', title='AI Score (% usage)'),
+        y=alt.Y('complexity:Q', title='Avg Complexity'),
+        size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[50, 500])),
+        color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(scheme='blues', domain=[0, 60], clamp=True)),
+        tooltip=['prolific_id', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time']
+    ).properties(title="Participant Clusters: AI Score vs Complexity (Size=Diff, Color=Time)")
+    
+    st.altair_chart(chart_bubble, use_container_width=True)
 
 
 # --- HYPOTHESIS 3: EFFICIENCY ILLUSION (DIFFICULTY) ---
