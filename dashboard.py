@@ -393,6 +393,22 @@ if not ai_only_df.empty and 'ai_similarity' in ai_only_df.columns:
         chart_s3 = alt.Chart(ai_only_df).mark_boxplot().encode(x='strategy:N', y='seq_score:Q', color='strategy:N')
         st.altair_chart(chart_s3, use_container_width=True)
 
+    # 3. New Scatter Plot: Avg Similarity vs Avg Difficulty
+    st.markdown("#### Avg Similarity vs Avg Difficulty (AI Users)")
+    # Group by participant for this specific plot
+    deep_dive_agg = ai_only_df.groupby('prolific_id').agg({
+        'ai_similarity': 'mean',
+        'seq_score': 'mean'
+    }).reset_index()
+    
+    chart_dd_scatter = alt.Chart(deep_dive_agg).mark_circle(size=60).encode(
+        x=alt.X('ai_similarity:Q', title='Avg Similarity'),
+        y=alt.Y('seq_score:Q', title='Avg Difficulty'),
+        tooltip=['prolific_id', 'ai_similarity', 'seq_score']
+    ).properties(title="Avg Similarity vs Avg Difficulty")
+    
+    st.altair_chart(chart_dd_scatter + chart_dd_scatter.transform_regression('ai_similarity', 'seq_score').mark_line(), use_container_width=True)
+
 else:
     st.info("No AI usage data to analyze similarity.")
 
@@ -457,14 +473,18 @@ with col_p3:
     
     user_agg['avg_similarity'] = user_agg['avg_similarity'].fillna(0)
     
-    # Define Classification
-    global_median_sim = df[df['ai_used']==True]['ai_similarity'].median()
+    # Define Classification (Round 16 Logic)
+    # Copier: Sim > 0.5
+    # Needer: Sim <= 0.5 AND Comp < 100
+    # Improver: Sim <= 0.5 AND Comp >= 100
     
     def classify_user(row):
         if row['ai_score'] == 0:
             return 'No AI'
-        elif row['avg_similarity'] > global_median_sim:
+        elif row['avg_similarity'] > 0.5:
             return 'Copier'
+        elif row['complexity'] < 100:
+            return 'Needer'
         else:
             return 'Improver'
 
@@ -472,8 +492,6 @@ with col_p3:
     
     # Generate Color Scale based on Time for each Cluster
     # We'll create a custom color column.
-    # Greys for No AI, Reds for Copier, Blues for Improver.
-    # We need to normalize time [0, 60] -> [0, 1] index for color picking
     
     import matplotlib.colors as mcolors
     import matplotlib.cm as cm
@@ -485,26 +503,29 @@ with col_p3:
         # Ensure min intensity is visible (0.3 to 1.0)
         intensity = 0.3 + (0.7 * t)
         
-        if row['cluster'] == 'No AI':
-            # Grey
-            return mcolors.to_hex(cm.Greys(intensity))
-        elif row['cluster'] == 'Copier':
+        if row['cluster'] == 'Copier':
             # Red
             return mcolors.to_hex(cm.Reds(intensity))
+        elif row['cluster'] == 'Needer':
+             # Yellow/Orange (YlOrBr)
+            return mcolors.to_hex(cm.YlOrBr(intensity))
         elif row['cluster'] == 'Improver':
-            # Blue
-            return mcolors.to_hex(cm.Blues(intensity))
-        return '#000000'
+            # Green
+            return mcolors.to_hex(cm.Greens(intensity))
+        return '#808080' # Grey for No AI
 
     user_agg['bubble_color'] = user_agg.apply(get_cluster_color, axis=1)
 
-    chart_bubble = alt.Chart(user_agg).mark_circle().encode(
+    # Filter out No AI for this chart
+    bubble_data = user_agg[user_agg['cluster'] != 'No AI']
+
+    chart_bubble = alt.Chart(bubble_data).mark_circle().encode(
         x=alt.X('ai_score:Q', title='AI Score (% usage)'),
         y=alt.Y('complexity:Q', title='Avg Complexity'),
         size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[50, 500])),
-        color=alt.Color('bubble_color:N', scale=None, title='Group (Time Shader)'), # Direct hex color
+        color=alt.Color('bubble_color:N', scale=None, title='Group'), 
         tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time']
-    ).properties(title="Participant Clusters (Red=Copier, Blue=Improver, Grey=NoAI)")
+    ).properties(title="Participant Clusters (Red=Copier, Yellow=Needer, Green=Improver)")
     
     st.altair_chart(chart_bubble, use_container_width=True)
 
