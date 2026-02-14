@@ -34,6 +34,8 @@ if 'start_time' not in st.session_state:
     st.session_state.start_time = None
 if 'end_time' not in st.session_state:
     st.session_state.end_time = None
+if 'round_start_time' not in st.session_state:
+    st.session_state.round_start_time = None
 
 # --- NAV FUNCTIONS ---
 def start_tutorial():
@@ -56,6 +58,7 @@ def start_game():
     st.session_state.ai_visible = False
     st.session_state.user_assessment = ""
     st.session_state.game_state.round_number = 1
+    st.session_state.round_start_time = time.time() # Start Round 1 Timer
 
 def next_round():
     gs = st.session_state.game_state
@@ -64,6 +67,11 @@ def next_round():
     assessment = st.session_state.user_assessment
     action_key = st.session_state.get(f"action_{gs.round_number}", None)
     seq_score = st.session_state.get(f"seq_{gs.round_number}", None)
+    
+    # Calculate Round Duration
+    round_duration = 0
+    if st.session_state.round_start_time:
+        round_duration = round(time.time() - st.session_state.round_start_time, 2)
     
     if not action_key or not seq_score or not assessment.strip():
         st.error("Please fill in Assessment, select an Action, and rate Difficulty.")
@@ -94,7 +102,8 @@ def next_round():
         'text_changed': text_changed,
         'ai_assessment_text': AI_ASSESSMENTS.get(gs.current_scenario_id, ""),
         'user_assessment_final': assessment,
-        'tutorial_duration_seconds': st.session_state.get('tutorial_duration_seconds', 0)
+        'tutorial_duration_seconds': st.session_state.get('tutorial_duration_seconds', 0),
+        'round_duration_seconds': round_duration
     }
     log_data(log_entry)
 
@@ -118,7 +127,9 @@ def next_round():
             'text_changed': False,
             'ai_assessment_text': AI_ASSESSMENTS.get(1, ""),
             'user_assessment_final': "COMPLETED",
-            'tutorial_duration_seconds': st.session_state.get('tutorial_duration_seconds', 0)
+            'user_assessment_final': "COMPLETED",
+            'tutorial_duration_seconds': st.session_state.get('tutorial_duration_seconds', 0),
+            'round_duration_seconds': round_duration
         }
         log_data(log_entry_final)
         
@@ -132,6 +143,9 @@ def next_round():
         st.session_state.user_assessment = ""
         # Rerun to refresh UI - NOT NEEDED IN CALLBACK
         # st.rerun() 
+        
+        # Reset Round Timer for next round
+        st.session_state.round_start_time = time.time()
 
 # --- PAGES ---
 

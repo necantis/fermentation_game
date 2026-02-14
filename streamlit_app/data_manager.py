@@ -71,7 +71,8 @@ def log_data(data_dict):
                     'assessment', 'action', 'seq_score',
                     'ai_used', 'text_changed', 
                     'ai_assessment_text', 'user_assessment_final',
-                    'tutorial_duration_seconds'
+                    'tutorial_duration_seconds',
+                    'round_duration_seconds'
                 ]
                 sheet.append_row(headers)
 
@@ -82,7 +83,8 @@ def log_data(data_dict):
                 'assessment', 'action', 'seq_score',
                 'ai_used', 'text_changed', 
                 'ai_assessment_text', 'user_assessment_final',
-                'tutorial_duration_seconds'
+                'tutorial_duration_seconds',
+                'round_duration_seconds'
             ]
             
             row = [str(data_dict.get(h, '')) for h in headers]
