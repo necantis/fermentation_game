@@ -5,6 +5,7 @@ import scipy.stats as stats
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import difflib
 
 st.set_page_config(page_title="Fermentation Game Analytics", layout="wide")
 
@@ -201,7 +202,10 @@ def calculate_ttest(data, group_col, value_col, group1_val=True, group2_val=Fals
     t_stat, p_val = stats.ttest_ind(g1, g2, equal_var=False)
     sig = "Significant (**p < 0.05**)" if p_val < 0.05 else "Not Significant"
     
-    return f"**T-Test Results**: t={t_stat:.2f}, p={p_val:.4f} -> {sig}"
+    g1_mean = g1.mean()
+    g2_mean = g2.mean()
+    
+    return f"**T-Test**: {group1_val} (Mean={g1_mean:.2f}) vs {group2_val} (Mean={g2_mean:.2f}) -> t={t_stat:.2f}, p={p_val:.4f} ({sig})"
 
 # ... (Load Data remains same)
 
@@ -213,26 +217,62 @@ st.markdown("**Hypothesis:** Higher AI usage increases task duration.")
 if 'round_duration_seconds' in df.columns and df['round_duration_seconds'].sum() > 0:
     st.subheader("Round Duration vs AI Usage")
     
-    # Stats
-    st.markdown(calculate_ttest(df, 'ai_used', 'round_duration_seconds'))
+    # 1. Split Analysis: Tutorial vs Game Time
+    # Merge feedback (for tutorial time) and logs (for game time)
+    if 'tutorial_duration_seconds' in df.columns:
+        df['is_tutorial'] = df['scenario_id'] == 1 # Assuming scenario 1 is tutorial/demo
+        
+        # Tutorial Time (from Feedback or Scenario 1)
+        # We'll use the per-round metrics. 
+        # Create a view for "Tutorial Rounds" vs "Game Rounds"
+        tutorial_df = df[df['batch_num'] == 1] # First batch/scenario usually tutorial
+        game_df = df[df['batch_num'] > 1]
+        
+        col_t1, col_t2 = st.columns(2)
+        
+        with col_t1:
+            st.markdown("#### Demo/Tutorial Time")
+            if not tutorial_df.empty:
+                st.markdown(calculate_ttest(tutorial_df, 'ai_used', 'round_duration_seconds'))
+                chart_tut = alt.Chart(tutorial_df).mark_boxplot().encode(
+                    x='ai_used:N', y='round_duration_seconds:Q', color='ai_used:N'
+                )
+                st.altair_chart(chart_tut, use_container_width=True)
+            else:
+                st.info("No tutorial data identified.")
 
-    # Viz: Boxplot + CI
-    base = alt.Chart(df).encode(x='ai_used:N', color='ai_used:N')
-    boxplot = base.mark_boxplot().encode(y='round_duration_seconds:Q')
-    errorbars = base.mark_errorbar(extent='ci').encode(y='round_duration_seconds:Q')
+        with col_t2:
+            st.markdown("#### Active Game Time")
+            if not game_df.empty:
+                st.markdown(calculate_ttest(game_df, 'ai_used', 'round_duration_seconds'))
+                chart_game = alt.Chart(game_df).mark_boxplot().encode(
+                    x='ai_used:N', y='round_duration_seconds:Q', color='ai_used:N'
+                )
+                st.altair_chart(chart_game, use_container_width=True)
+            else:
+                st.info("No game data identified.")
+
+    # 2. Stacked Bar Chart (Red/Blue Split)
+    st.subheader("Participant Time Breakdown (Red=No AI, Blue=AI)")
     
-    chart_h1 = (boxplot + errorbars).properties(title="Time per Round (Mean + 95% CI)")
-    st.altair_chart(chart_h1, use_container_width=True)
+    # Classify users: Did they EVER use AI?
+    ai_users = df[df['ai_used'] == True]['prolific_id'].unique()
+    df['user_group'] = df['prolific_id'].apply(lambda x: 'AI User' if x in ai_users else 'Control (No AI)')
     
-    # NEW: Stacked Bar Chart for Time Breakdown
-    st.subheader("Participant Time Breakdown")
-    chart_stack = alt.Chart(df).mark_bar().encode(
-        x='prolific_id:N',
-        y='round_duration_seconds:Q',
-        color='round:N',
-        tooltip=['prolific_id', 'round', 'round_duration_seconds', 'ai_used']
-    ).properties(title="Total Time Breakdown by Round per Participant")
-    st.altair_chart(chart_stack, use_container_width=True)
+    # Define color scale for bars based on specific round usage
+    # We want Red for No AI, Blue for AI
+    color_scale = alt.Scale(domain=[False, True], range=['#d62728', '#1f77b4'])
+    
+    chart_stack_split = alt.Chart(df).mark_bar().encode(
+        x=alt.X('prolific_id:N', title='Participant'),
+        y=alt.Y('round_duration_seconds:Q', title='Duration (s)'),
+        color=alt.Color('ai_used:N', scale=color_scale, title="AI Used (Round)"),
+        column=alt.Column('user_group:N', title="Group"),
+        tooltip=['prolific_id', 'round', 'round_duration_seconds', 'ai_used', 'scenario_name'],
+        order=alt.Order('round') # Stack by round order
+    ).properties(title="Time Breakdown by Group & AI Usage")
+    
+    st.altair_chart(chart_stack_split, use_container_width=True)
 
 else:
     st.info("Insufficient round duration data for granular analysis.")
@@ -249,13 +289,62 @@ df['text_len'] = df['assessment'].fillna("").astype(str).apply(len)
 # Stats
 st.markdown(calculate_ttest(df, 'ai_used', 'text_len'))
 
-# Viz
-base_h2 = alt.Chart(df).encode(x='ai_used:N', color='ai_used:N')
-box_h2 = base_h2.mark_boxplot().encode(y='text_len:Q')
-err_h2 = base_h2.mark_errorbar(extent='ci').encode(y='text_len:Q')
+# Calculate Complexity (ARI Proxy: 4.71*(chars/words) + 0.5*(words/sentences) - 21.43)
+# Simplified here: just avg word length + len
+def calc_complexity(text):
+    if not isinstance(text, str) or not text.strip(): return 0
+    words = text.split()
+    if not words: return 0
+    avg_word_len = sum(len(w) for w in words) / len(words)
+    return avg_word_len * len(words) # Rough proxy for "information density"
 
-chart_h2 = (box_h2 + err_h2).properties(title="Assessment Length (Mean + 95% CI)")
-st.altair_chart(chart_h2, use_container_width=True)
+df['complexity'] = df['assessment'].apply(calc_complexity)
+
+# Calculate Similarity to AI
+def calc_similarity(row):
+    # Only relevant if AI was used and text exists
+    if not row['ai_used'] or pd.isna(row['ai_assessment_text']): return 0.0
+    user_text = str(row['assessment'])
+    ai_text = str(row['ai_assessment_text'])
+    return difflib.SequenceMatcher(None, user_text, ai_text).ratio()
+
+df['ai_similarity'] = df.apply(calc_similarity, axis=1)
+
+# Stats for Length
+st.markdown("#### Answer Length (Chars)")
+st.markdown(calculate_ttest(df, 'ai_used', 'text_len'))
+
+# Viz Length
+chart_h2_len = alt.Chart(df).mark_boxplot().encode(
+    x='ai_used:N', y='text_len:Q', color='ai_used:N'
+).properties(title="Length")
+
+# Stats for Complexity
+st.markdown("#### Complexity (Word Length * Word Count)")
+st.markdown(calculate_ttest(df, 'ai_used', 'complexity'))
+
+# Viz Complexity
+chart_h2_comp = alt.Chart(df).mark_boxplot().encode(
+    x='ai_used:N', y='complexity:Q', color='ai_used:N'
+).properties(title="Complexity")
+
+col_h2_1, col_h2_2 = st.columns(2)
+col_h2_1.altair_chart(chart_h2_len, use_container_width=True)
+col_h2_2.altair_chart(chart_h2_comp, use_container_width=True)
+
+# SIMILARITY ANALYSIS
+st.subheader("AI Assimilation: Copiers vs Improvers")
+ai_only_df = df[df['ai_used'] == True].copy()
+if not ai_only_df.empty:
+    chart_sim = alt.Chart(ai_only_df).mark_circle(size=60).encode(
+        x=alt.X('ai_similarity:Q', title="Similarity to AI (0=Diff, 1=Copy)"),
+        y=alt.Y('seq_score:Q', title="Score/Difficulty"),
+        color=alt.Color('prolific_id:N'),
+        tooltip=['prolific_id', 'ai_similarity', 'text_len']
+    ).properties(title="Similarity vs Outcome (AI Users)")
+    st.altair_chart(chart_sim, use_container_width=True)
+else:
+    st.info("No AI usage data to analyze similarity.")
 
 
 # --- HYPOTHESIS 3: EFFICIENCY ILLUSION (DIFFICULTY) ---
