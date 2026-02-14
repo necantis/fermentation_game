@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import scipy.stats as stats
+import gspread
+from google.oauth2.service_account import Credentials
 import os
 
 st.set_page_config(page_title="Fermentation Game Analytics", layout="wide")
@@ -29,14 +31,83 @@ FEEDBACK_LOG_COLS = [
     'tutorial_duration_seconds', 'feedback_text'
 ]
 
-@st.cache_data
+# Constants
+SCOPE = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+SHEET_NAME = "Beacon_v02"
+
+def connect_to_gsheet():
+    """Connect to Google Sheets using st.secrets (Cloud) or credentials.json (Local)."""
+    try:
+        if "gcp_service_account" in st.secrets:
+            # Create credentials from the secrets dict
+            creds_dict = dict(st.secrets["gcp_service_account"])
+            creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPE)
+            client = gspread.authorize(creds)
+            return client.open(SHEET_NAME)
+    except Exception as e:
+        pass
+
+    # Local fallback
+    if os.path.exists("credentials.json"):
+        try:
+            creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPE)
+            client = gspread.authorize(creds)
+            return client.open(SHEET_NAME)
+        except Exception:
+            pass
+    return None
+
+@st.cache_data(ttl=60) # Cache for 60 seconds to allow near-real-time updates
 def load_data():
     data = None
-    if os.path.exists(DATA_FILE):
+    feedback = None
+    
+    # --- TRY GOOGLE SHEETS FIRST ---
+    try:
+        sh = connect_to_gsheet()
+        if sh:
+            # Load Game Logs (Sheet1)
+            try:
+                ws = sh.sheet1
+                records = ws.get_all_records()
+                if records:
+                    data = pd.DataFrame(records)
+            except Exception as e:
+                st.warning(f"Could not load Game Logs from GSheet: {e}")
+
+            # Load Feedback Logs (Worksheet 'Feedback')
+            try:
+                ws_feedback = sh.worksheet("Feedback")
+                records_fb = ws_feedback.get_all_records()
+                if records_fb:
+                    feedback = pd.DataFrame(records_fb)
+            except Exception as e:
+                # Limit warning if feedback sheet just doesn't exist yet
+                pass
+    except Exception as e:
+         st.error(f"GSheet Connection failed: {e}")
+
+    # --- FALLBACK TO LOCAL CSV IF GSHEET FAILED OR EMPTY ---
+    if data is None or data.empty:
+        if os.path.exists(DATA_FILE):
+            try:
+                data = pd.read_csv(DATA_FILE, on_bad_lines='warn')
+            except Exception:
+                pass
+
+    if feedback is None or feedback.empty:
+        if os.path.exists(FEEDBACK_FILE):
+             try:
+                 feedback = pd.read_csv(FEEDBACK_FILE, on_bad_lines='warn')
+             except Exception:
+                 pass
+    
+    # --- PROCESSING & REPAIR (APPLY TO WHATEVER SOURCE WE GOT) ---
+    if data is not None and not data.empty:
         try:
-            # Load with existing header, handle bad lines gracefully
-            data = pd.read_csv(DATA_FILE, on_bad_lines='warn')
-            
             # STANDARD COLUMN REPAIR
             # Ensure all expected columns exist, filling missing ones with defaults
             for col in GAME_LOG_COLS:
@@ -66,8 +137,6 @@ def load_data():
                 data['time_diff'] = data.groupby('prolific_id')['timestamp'].diff().dt.total_seconds().fillna(0)
                 
                 # Create effective plotting column
-                # valid if explicit duration > 0, OR if inferred diff is reasonable (< 1 hour)
-                # Note: Round 1 for old data will be 0 as it has no predecessor
                 def get_valid_duration(row):
                     if row['round_duration_seconds'] > 0.1:
                         return row['round_duration_seconds']
@@ -78,20 +147,16 @@ def load_data():
                 data['round_duration_seconds'] = data.apply(get_valid_duration, axis=1)
 
         except Exception as e:
-            st.error(f"Error loading game data: {e}")
-    
-    feedback = None
-    if os.path.exists(FEEDBACK_FILE):
+            st.error(f"Error processing game data: {e}")
+
+    if feedback is not None and not feedback.empty:
         try:
-             feedback = pd.read_csv(FEEDBACK_FILE, on_bad_lines='warn')
-             
              # Repair Feedback Columns
              for col in FEEDBACK_LOG_COLS:
                  if col not in feedback.columns:
                      feedback[col] = 0 if 'seconds' in col else ""
-                     
         except Exception as e:
-            st.error(f"Error loading feedback data: {e}")
+            st.error(f"Error processing feedback data: {e}")
             
     return data, feedback
 
