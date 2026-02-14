@@ -183,11 +183,16 @@ col1.metric("Total Log Entries", len(df))
 col1.metric("Unique Players", df['prolific_id'].nunique())
 
 if df_feedback is not None and not df_feedback.empty:
-    avg_time = df_feedback['total_time_seconds'].mean()
-    col2.metric("Avg Total Duration (s)", f"{avg_time:.2f}")
-    
-    st.subheader("Total Time Distribution")
-    st.bar_chart(df_feedback['total_time_seconds'])
+    avg_total_time = df_feedback['total_time_seconds'].mean()
+    col2.metric("Avg Total Duration (s)", f"{avg_total_time:.2f}")
+
+# Calculate Avg Time per Round per Participant (from Game Logs)
+user_avg_round_time = df.groupby('prolific_id')['round_duration_seconds'].mean()
+avg_of_avgs = user_avg_round_time.mean()
+# col3.metric("Global Avg Time/Round", f"{avg_of_avgs:.2f}")
+
+st.subheader("Distribution of Average Time per Round (per Participant)")
+st.bar_chart(user_avg_round_time)
 
 
 # ... (Imports and Config remain same)
@@ -228,25 +233,48 @@ if 'round_duration_seconds' in df.columns and df['round_duration_seconds'].sum()
     
     st.caption("Note: '0' duration bars indicate missing timestamp data in older logs.")
 
-    # 2. Stacked Bar Chart (Red/Blue Split)
+    # 2. Stacked Bar Chart with Gradient Colors
     st.subheader("Participant Time Breakdown (Red=No AI, Blue=AI)")
     
-    # Classify users: Did they EVER use AI?
+    # Classify users
     ai_users = df[df['ai_used'] == True]['prolific_id'].unique()
     df['user_group'] = df['prolific_id'].apply(lambda x: 'AI User' if x in ai_users else 'Control (No AI)')
     
-    # Define color scale for bars based on specific round usage
-    # We want Red for No AI, Blue for AI
-    color_scale = alt.Scale(domain=[False, True], range=['#d62728', '#1f77b4'])
+    # Create Color Key for Gradients
+    # Red Gradient (No AI): Light -> Dark (Rounds 1-7)
+    # Blue Gradient (AI): Light -> Dark (Rounds 1-7)
+    # We clamp rounds > 7 to use the 7th color
+    
+    def get_color_key(row):
+        r = min(int(row['round']), 7)
+        return f"{'AI' if row['ai_used'] else 'NoAI'}_R{r}"
+
+    df['color_key'] = df.apply(get_color_key, axis=1)
+    
+    # Define Domain (Categories)
+    domain = [
+        'NoAI_R1', 'NoAI_R2', 'NoAI_R3', 'NoAI_R4', 'NoAI_R5', 'NoAI_R6', 'NoAI_R7',
+        'AI_R1', 'AI_R2', 'AI_R3', 'AI_R4', 'AI_R5', 'AI_R6', 'AI_R7'
+    ]
+    
+    # Define Range (Hex Colors)
+    # Reds: Light (#ffcdd2) -> Dark (#b71c1c)
+    reds = ['#ffcdd2', '#ef9a9a', '#e57373', '#ef5350', '#f44336', '#d32f2f', '#b71c1c']
+    # Blues: Light (#bbdefb) -> Dark (#0d47a1)
+    blues = ['#bbdefb', '#90caf9', '#64b5f6', '#42a5f5', '#2196f3', '#1976d2', '#0d47a1']
+    
+    range_colors = reds + blues
+    
+    color_scale = alt.Scale(domain=domain, range=range_colors)
     
     chart_stack_split = alt.Chart(df).mark_bar().encode(
         x=alt.X('prolific_id:N', title='Participant'),
         y=alt.Y('round_duration_seconds:Q', title='Duration (s)'),
-        color=alt.Color('ai_used:N', scale=color_scale, title="AI Used (Round)"),
+        color=alt.Color('color_key:N', scale=color_scale, title="State (AI_Round)"),
         column=alt.Column('user_group:N', title="Group"),
-        tooltip=['prolific_id', 'round', 'round_duration_seconds', 'ai_used', 'scenario_name'],
-        order=alt.Order('round') # Stack by round order
-    ).properties(title="Time Breakdown by Group & AI Usage")
+        tooltip=['prolific_id', 'round', 'round_duration_seconds', 'ai_used'],
+        order=alt.Order('round')
+    ).properties(title="Time Breakdown by Group & AI Usage (Gradient by Round)")
     
     st.altair_chart(chart_stack_split, use_container_width=True)
 
@@ -360,7 +388,7 @@ user_agg = df.groupby('prolific_id').agg({
 
 user_agg.rename(columns={'ai_used': 'ai_score', 'round_duration_seconds': 'avg_time', 'seq_score': 'avg_difficulty'}, inplace=True)
 
-col_p1, col_p2 = st.columns(2)
+col_p1, col_p2, col_p3 = st.columns(3)
 
 with col_p1:
     st.subheader("AI Score vs Avg Complexity")
@@ -375,6 +403,13 @@ with col_p2:
         x='ai_score:Q', y='avg_time:Q', tooltip=['prolific_id', 'ai_score', 'avg_time']
     ).properties(title="AI Score vs Avg Time")
     st.altair_chart(chart_p2 + chart_p2.transform_regression('ai_score', 'avg_time').mark_line(), use_container_width=True)
+    
+with col_p3:
+    st.subheader("AI Score vs Avg Difficulty")
+    chart_p3 = alt.Chart(user_agg).mark_circle(size=60).encode(
+        x='ai_score:Q', y='avg_difficulty:Q', tooltip=['prolific_id', 'ai_score', 'avg_difficulty']
+    ).properties(title="AI Score vs Avg Difficulty")
+    st.altair_chart(chart_p3 + chart_p3.transform_regression('ai_score', 'avg_difficulty').mark_line(), use_container_width=True)
 
 
 # --- HYPOTHESIS 3: EFFICIENCY ILLUSION (DIFFICULTY) ---
