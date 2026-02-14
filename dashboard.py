@@ -236,9 +236,10 @@ if 'round_duration_seconds' in df.columns and df['round_duration_seconds'].sum()
     # DIAGNOSTICS: Check for missing durations
     missing_duration_count = df[df['round_duration_seconds'] == 0].shape[0]
     if missing_duration_count > 0:
-        st.warning(f"⚠️ Data Quality Warning: {missing_duration_count} rounds have 0.0s duration (missing timestamps). These will not appear in the bar chart.")
-        with st.expander("Show Missing Duration Details"):
-            st.dataframe(df[df['round_duration_seconds'] == 0][['prolific_id', 'round', 'batch_num', 'scenario_name']])
+        st.warning(f"⚠️ Data Quality Warning: {missing_duration_count} rounds have 0.0s duration. This means the logs are missing timestamps (common in older data versions).")
+        st.markdown("These rounds exist in the database but **appear as invisible (height 0)** in the Time Breakdown graph below.")
+        with st.expander("Show Affected Rounds (Missing Duration)"):
+            st.dataframe(df[df['round_duration_seconds'] == 0][['prolific_id', 'round', 'scenario_name']])
 
     # 2. Stacked Bar Chart with Gradient Colors
     st.subheader("Participant Time Breakdown (Red=No AI, Blue=AI)")
@@ -444,7 +445,16 @@ with col_p3:
     # We need a median similarity per user? Or just use the global median on their avg sim?
     # Let's calculate 'avg_similarity' for each user
     user_sim = df[df['ai_used']==True].groupby('prolific_id')['ai_similarity'].mean().reset_index()
-    user_agg = pd.merge(user_agg, user_sim, on='prolific_id', how='left')
+    
+    # Robust Merge: Ensure 'avg_similarity' exists even if user_sim is empty or merge acts up
+    if not user_sim.empty:
+        user_agg = pd.merge(user_agg, user_sim, on='prolific_id', how='left')
+    else:
+        user_agg['avg_similarity'] = 0.0
+        
+    if 'avg_similarity' not in user_agg.columns:
+        user_agg['avg_similarity'] = 0.0
+    
     user_agg['avg_similarity'] = user_agg['avg_similarity'].fillna(0)
     
     # Define Classification
