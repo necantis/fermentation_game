@@ -233,6 +233,13 @@ if 'round_duration_seconds' in df.columns and df['round_duration_seconds'].sum()
     
     st.caption("Note: '0' duration bars indicate missing timestamp data in older logs.")
 
+    # DIAGNOSTICS: Check for missing durations
+    missing_duration_count = df[df['round_duration_seconds'] == 0].shape[0]
+    if missing_duration_count > 0:
+        st.warning(f"⚠️ Data Quality Warning: {missing_duration_count} rounds have 0.0s duration (missing timestamps). These will not appear in the bar chart.")
+        with st.expander("Show Missing Duration Details"):
+            st.dataframe(df[df['round_duration_seconds'] == 0][['prolific_id', 'round', 'batch_num', 'scenario_name']])
+
     # 2. Stacked Bar Chart with Gradient Colors
     st.subheader("Participant Time Breakdown (Red=No AI, Blue=AI)")
     
@@ -336,6 +343,21 @@ col_h2_1, col_h2_2 = st.columns(2)
 col_h2_1.altair_chart(chart_h2_len, use_container_width=True)
 col_h2_2.altair_chart(chart_h2_comp, use_container_width=True)
 
+# --- HYPOTHESIS 3: EFFICIENCY ILLUSION (DIFFICULTY) ---
+st.header("H3: Efficiency Illusion (Difficulty)")
+st.markdown("**Hypothesis:** Higher AI usage lowers perceived difficulty.")
+
+# Stats
+st.markdown(calculate_ttest(df, 'ai_used', 'seq_score'))
+
+# Viz
+base_h3 = alt.Chart(df).encode(x='ai_used:N', color='ai_used:N')
+box_h3 = base_h3.mark_boxplot().encode(y='seq_score:Q')
+err_h3 = base_h3.mark_errorbar(extent='ci').encode(y='seq_score:Q')
+
+chart_h3 = (box_h3 + err_h3).properties(title="Perceived Difficulty (Mean + 95% CI)")
+st.altair_chart(chart_h3, use_container_width=True)
+
 # SIMILARITY ANALYSIS: Copiers vs Improvers
 st.subheader("Deep Dive: Copiers vs Improvers (Among AI Users)")
 ai_only_df = df[df['ai_used'] == True].copy()
@@ -411,33 +433,70 @@ with col_p3:
     ).properties(title="AI Score vs Avg Difficulty")
     st.altair_chart(chart_p3 + chart_p3.transform_regression('ai_score', 'avg_difficulty').mark_line(), use_container_width=True)
 
-    st.subheader("Bubble Graph: AI Impact (Color=Time)")
-    # X=AI Score, Y=Complexity, Size=Difficulty, Color=Time
+# --- PARTICIPANT CLUSTERS (BUBBLE GRAPH) ---
+    st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
+    
+    # Needs logic to classify each USER (not just rounds)
+    # 1. NoAI: ai_score == 0
+    # 2. Copier: ai_score > 0 AND median(sim) > global_median (or just reuse per-round logic aggregated?)
+    # Let's use the aggregated metrics for simplicity.
+    
+    # We need a median similarity per user? Or just use the global median on their avg sim?
+    # Let's calculate 'avg_similarity' for each user
+    user_sim = df[df['ai_used']==True].groupby('prolific_id')['ai_similarity'].mean().reset_index()
+    user_agg = pd.merge(user_agg, user_sim, on='prolific_id', how='left')
+    user_agg['avg_similarity'] = user_agg['avg_similarity'].fillna(0)
+    
+    # Define Classification
+    global_median_sim = df[df['ai_used']==True]['ai_similarity'].median()
+    
+    def classify_user(row):
+        if row['ai_score'] == 0:
+            return 'No AI'
+        elif row['avg_similarity'] > global_median_sim:
+            return 'Copier'
+        else:
+            return 'Improver'
+
+    user_agg['cluster'] = user_agg.apply(classify_user, axis=1)
+    
+    # Generate Color Scale based on Time for each Cluster
+    # We'll create a custom color column.
+    # Greys for No AI, Reds for Copier, Blues for Improver.
+    # We need to normalize time [0, 60] -> [0, 1] index for color picking
+    
+    import matplotlib.colors as mcolors
+    import matplotlib.cm as cm
+    import numpy as np
+    
+    def get_cluster_color(row):
+        # Clamp time to 60s max for intense color
+        t = min(row['avg_time'], 60) / 60.0
+        # Ensure min intensity is visible (0.3 to 1.0)
+        intensity = 0.3 + (0.7 * t)
+        
+        if row['cluster'] == 'No AI':
+            # Grey
+            return mcolors.to_hex(cm.Greys(intensity))
+        elif row['cluster'] == 'Copier':
+            # Red
+            return mcolors.to_hex(cm.Reds(intensity))
+        elif row['cluster'] == 'Improver':
+            # Blue
+            return mcolors.to_hex(cm.Blues(intensity))
+        return '#000000'
+
+    user_agg['bubble_color'] = user_agg.apply(get_cluster_color, axis=1)
+
     chart_bubble = alt.Chart(user_agg).mark_circle().encode(
         x=alt.X('ai_score:Q', title='AI Score (% usage)'),
         y=alt.Y('complexity:Q', title='Avg Complexity'),
         size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[50, 500])),
-        color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(scheme='blues', domain=[0, 60], clamp=True)),
-        tooltip=['prolific_id', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time']
-    ).properties(title="Participant Clusters: AI Score vs Complexity (Size=Diff, Color=Time)")
+        color=alt.Color('bubble_color:N', scale=None, title='Group (Time Shader)'), # Direct hex color
+        tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time']
+    ).properties(title="Participant Clusters (Red=Copier, Blue=Improver, Grey=NoAI)")
     
     st.altair_chart(chart_bubble, use_container_width=True)
-
-
-# --- HYPOTHESIS 3: EFFICIENCY ILLUSION (DIFFICULTY) ---
-st.header("H3: Efficiency Illusion (Difficulty)")
-st.markdown("**Hypothesis:** Higher AI usage lowers perceived difficulty.")
-
-# Stats
-st.markdown(calculate_ttest(df, 'ai_used', 'seq_score'))
-
-# Viz
-base_h3 = alt.Chart(df).encode(x='ai_used:N', color='ai_used:N')
-box_h3 = base_h3.mark_boxplot().encode(y='seq_score:Q')
-err_h3 = base_h3.mark_errorbar(extent='ci').encode(y='seq_score:Q')
-
-chart_h3 = (box_h3 + err_h3).properties(title="Perceived Difficulty (Mean + 95% CI)")
-st.altair_chart(chart_h3, use_container_width=True)
 
 # Raw Data
 with st.expander("View Raw Data"):
