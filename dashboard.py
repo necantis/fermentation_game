@@ -458,7 +458,7 @@ with col_p3:
         color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(scheme='blues', domain=[0, 60], clamp=True)), 
         shape=alt.Shape('cluster:N', title='Group Shape', scale=alt.Scale(
             domain=['Copier', 'Needer', 'Improver'], 
-            range=['square', 'circle', 'triangle-up']
+            range=['square', 'circle', 'cross']
         )),
         tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
     ).properties(title="Participant Clusters (Shape=Group, Color=Time)")
@@ -476,12 +476,6 @@ with col_p3:
             debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
             st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
-    # Debug Data Table
-    with st.expander("Debug: Check Cluster Classification & Data"):
-        st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
-        st.markdown("Filter Logic: **Copier** (Sim > 0.5), **Needer** (Sim <= 0.5 & Comp < 100), **Improver** (Sim <= 0.5 & Comp >= 100)")
-        debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
-        st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
 # Raw Data
 with st.expander("View Raw Data"):
