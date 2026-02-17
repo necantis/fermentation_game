@@ -443,6 +443,11 @@ with col_p2:
     ).properties(title="AI Score vs Avg Time")
     st.altair_chart(chart_p2 + chart_p2.transform_regression('ai_score', 'avg_time').mark_line(), use_container_width=True)
     
+with col_p3:
+    st.subheader("AI Score vs Avg Difficulty")
+    chart_p3 = alt.Chart(user_agg).mark_circle(size=60).encode(
+        x='ai_score:Q', y='avg_difficulty:Q', tooltip=['prolific_id', 'ai_score', 'avg_difficulty']
+    ).properties(title="AI Score vs Avg Difficulty")
     st.altair_chart(chart_p3 + chart_p3.transform_regression('ai_score', 'avg_difficulty').mark_line(), use_container_width=True)
 
 # --- PARTICIPANT CLUSTERS (BUBBLE GRAPH) ---
