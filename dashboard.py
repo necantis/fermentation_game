@@ -443,54 +443,9 @@ with col_p2:
     ).properties(title="AI Score vs Avg Time")
     st.altair_chart(chart_p2 + chart_p2.transform_regression('ai_score', 'avg_time').mark_line(), use_container_width=True)
     
-with col_p3:
-    st.subheader("AI Score vs Avg Difficulty")
-    chart_p3 = alt.Chart(user_agg).mark_circle(size=60).encode(
-        x='ai_score:Q', y='avg_difficulty:Q', tooltip=['prolific_id', 'ai_score', 'avg_difficulty']
-    ).properties(title="AI Score vs Avg Difficulty")
     st.altair_chart(chart_p3 + chart_p3.transform_regression('ai_score', 'avg_difficulty').mark_line(), use_container_width=True)
 
 # --- PARTICIPANT CLUSTERS (BUBBLE GRAPH) ---
-    st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
-    
-    # Needs logic to classify each USER (not just rounds)
-    # 1. NoAI: ai_score == 0
-    # 2. Copier: ai_score > 0 AND median(sim) > global_median (or just reuse per-round logic aggregated?)
-    # Let's use the aggregated metrics for simplicity.
-    
-    # We need a median similarity per user? Or just use the global median on their avg sim?
-    # Let's calculate 'avg_similarity' for each user
-    user_sim = df[df['ai_used']==True].groupby('prolific_id')['ai_similarity'].mean().reset_index()
-    
-    # Robust Merge: Ensure 'avg_similarity' exists even if user_sim is empty or merge acts up
-    if not user_sim.empty:
-        user_agg = pd.merge(user_agg, user_sim, on='prolific_id', how='left')
-    else:
-        user_agg['avg_similarity'] = 0.0
-        
-    if 'avg_similarity' not in user_agg.columns:
-        user_agg['avg_similarity'] = 0.0
-    
-    user_agg['avg_similarity'] = user_agg['avg_similarity'].fillna(0)
-    
-    # Define Classification (Round 19 Logic)
-    # Copier: AI Score > 0.6 AND Complexity < 50
-    # Improver: Complexity >= 100 (if not Copier)
-    # Needer: Everyone else (including No AI)
-    
-    def classify_user(row):
-        if row['ai_score'] > 0.6 and row['complexity'] < 50:
-            return 'Copier'
-        elif row['complexity'] >= 100:
-            return 'Improver'
-        else:
-            return 'Needer'
-
-    user_agg['cluster'] = user_agg.apply(classify_user, axis=1)
-    
-    # Unified Color Scheme: Blue Gradients by Time
-    # We use Altair's built-in scale for this.
-
     chart_bubble = alt.Chart(user_agg).mark_point(filled=True, opacity=0.8, size=200).encode(
         x=alt.X('ai_score:Q', title='AI Score (% usage)'),
         y=alt.Y('complexity:Q', title='Avg Complexity'),
@@ -503,7 +458,18 @@ with col_p3:
         tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
     ).properties(title="Participant Clusters (Shape=Group, Color=Time)")
     
-    st.altair_chart(chart_bubble, use_container_width=True)
+    # Layout: Use 80% width (1:10:1 ratio)
+    c1, c2, c3 = st.columns([1, 10, 1])
+    with c2:
+        st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
+        st.altair_chart(chart_bubble, use_container_width=True)
+
+        # Debug Data Table (Moved inside the wide column)
+        with st.expander("Debug: Check Cluster Classification & Data"):
+            st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
+            st.markdown("Filter Logic: **Copier** (Sim > 0.5), **Needer** (Sim <= 0.5 & Comp < 100), **Improver** (Sim <= 0.5 & Comp >= 100)")
+            debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
+            st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
     # Debug Data Table
     with st.expander("Debug: Check Cluster Classification & Data"):
