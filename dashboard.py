@@ -460,18 +460,15 @@ with col_p3:
         tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
     ).properties(title="Participant Clusters (Shape=Group, Color=Time)")
     
-    # Layout: Use 80% width (1:10:1 ratio)
-    c1, c2, c3 = st.columns([1, 10, 1])
-    with c2:
-        st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
-        st.altair_chart(chart_bubble, use_container_width=True)
+    st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
+    st.altair_chart(chart_bubble, use_container_width=True)
 
-        # Debug Data Table (Moved inside the wide column)
-        with st.expander("Debug: Check Cluster Classification & Data"):
-            st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
-            st.markdown("Filter Logic: **Copier** (Sim > 0.5), **Needer** (Sim <= 0.5 & Comp < 100), **Improver** (Sim <= 0.5 & Comp >= 100)")
-            debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
-            st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
+    # Debug Data Table
+    with st.expander("Debug: Check Cluster Classification & Data"):
+        st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
+        st.markdown("Filter Logic: **Copier** (Sim > 0.5), **Needer** (Sim <= 0.5 & Comp < 100), **Improver** (Sim <= 0.5 & Comp >= 100)")
+        debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
+        st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
 
 # Raw Data
