@@ -473,63 +473,35 @@ with col_p3:
     
     user_agg['avg_similarity'] = user_agg['avg_similarity'].fillna(0)
     
-    # Define Classification (Round 16 Logic)
-    # Copier: Sim > 0.5
-    # Needer: Sim <= 0.5 AND Comp < 100
-    # Improver: Sim <= 0.5 AND Comp >= 100
+    # Define Classification (Round 19 Logic)
+    # Copier: AI Score > 0.6 AND Complexity < 50
+    # Improver: Complexity >= 100 (if not Copier)
+    # Needer: Everyone else (including No AI)
     
     def classify_user(row):
-        if row['ai_score'] == 0:
-            return 'No AI'
-        elif row['avg_similarity'] > 0.5:
+        if row['ai_score'] > 0.6 and row['complexity'] < 50:
             return 'Copier'
-        elif row['complexity'] < 100:
-            return 'Needer'
-        else:
+        elif row['complexity'] >= 100:
             return 'Improver'
+        else:
+            return 'Needer'
 
     user_agg['cluster'] = user_agg.apply(classify_user, axis=1)
     
-    # Generate Color Scale based on Time for each Cluster
-    # We'll create a custom color column.
-    
-    import matplotlib.colors as mcolors
-    import matplotlib.cm as cm
-    import numpy as np
-    
-    def get_cluster_color(row):
-        # Clamp time to 60s max for intense color
-        t = min(row['avg_time'], 60) / 60.0
-        # Ensure min intensity is visible (0.3 to 1.0)
-        intensity = 0.3 + (0.7 * t)
-        
-        if row['cluster'] == 'Copier':
-            # Red
-            return mcolors.to_hex(cm.Reds(intensity))
-        elif row['cluster'] == 'Needer':
-             # Yellow/Orange (YlOrBr)
-            return mcolors.to_hex(cm.YlOrBr(intensity))
-        elif row['cluster'] == 'Improver':
-            # Green
-            return mcolors.to_hex(cm.Greens(intensity))
-        return '#808080' # Grey for No AI
+    # Unified Color Scheme: Blue Gradients by Time
+    # We use Altair's built-in scale for this.
 
-    user_agg['bubble_color'] = user_agg.apply(get_cluster_color, axis=1)
-
-    # Filter out No AI for this chart
-    bubble_data = user_agg[user_agg['cluster'] != 'No AI']
-
-    chart_bubble = alt.Chart(bubble_data).mark_point(filled=True, opacity=0.8, size=200).encode(
+    chart_bubble = alt.Chart(user_agg).mark_point(filled=True, opacity=0.8, size=200).encode(
         x=alt.X('ai_score:Q', title='AI Score (% usage)'),
         y=alt.Y('complexity:Q', title='Avg Complexity'),
-        size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[100, 1000])), # Increased size range for visibility
-        color=alt.Color('bubble_color:N', scale=None, title='Group Color'), 
+        size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[100, 1000])), 
+        color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(scheme='blues', domain=[0, 60], clamp=True)), 
         shape=alt.Shape('cluster:N', title='Group Shape', scale=alt.Scale(
             domain=['Copier', 'Needer', 'Improver'], 
             range=['square', 'circle', 'triangle']
         )),
         tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
-    ).properties(title="Participant Clusters (Red=Copier, Yellow=Needer, Green=Improver)")
+    ).properties(title="Participant Clusters (Shape=Group, Color=Time)")
     
     st.altair_chart(chart_bubble, use_container_width=True)
 
