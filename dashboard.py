@@ -456,10 +456,7 @@ with col_p3:
         y=alt.Y('complexity:Q', title='Avg Complexity'),
         size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[100, 1000])), 
         color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(scheme='blues', domain=[0, 60], clamp=True)), 
-        shape=alt.Shape('cluster:N', title='Group Shape', scale=alt.Scale(
-            domain=['Copier', 'Needer', 'Improver'], 
-            range=['square', 'circle', 'cross']
-        )),
+        shape=alt.Shape('cluster:N', title='Group Shape'),
         tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
     ).properties(title="Participant Clusters (Shape=Group, Color=Time)")
     
