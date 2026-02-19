@@ -495,7 +495,7 @@ chart_bubble = alt.Chart(user_agg).mark_point(filled=True, opacity=0.8, size=200
         range=['square', 'circle', 'triangle']
     )),
     tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
-).properties(title="Participant Clusters (Shape=Group, Color=Time)")
+).properties(title="Participant Clusters (Shape=Group, Color=Time)", height=800)
 
 st.altair_chart(chart_bubble, use_container_width=True)
 
