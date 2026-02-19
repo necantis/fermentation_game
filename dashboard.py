@@ -485,8 +485,6 @@ user_agg['cluster'] = user_agg.apply(classify_user, axis=1)
 # Unified Color Scheme: Blue Gradients by Time
 # We use Altair's built-in scale for this.
 
-).properties(title="Participant Clusters: Users -Copiers and Improvers", height=800)
-
 # 1. Base Chart (Common Encodings)
 base = alt.Chart(user_agg).encode(
     x=alt.X('ai_score:Q', title='AI Score (% usage)'),
