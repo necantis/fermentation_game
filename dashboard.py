@@ -451,24 +451,61 @@ with col_p3:
     st.altair_chart(chart_p3 + chart_p3.transform_regression('ai_score', 'avg_difficulty').mark_line(), use_container_width=True)
 
 # --- PARTICIPANT CLUSTERS (BUBBLE GRAPH) ---
-    chart_bubble = alt.Chart(user_agg).mark_point(filled=True, opacity=0.8, size=200).encode(
-        x=alt.X('ai_score:Q', title='AI Score (% usage)'),
-        y=alt.Y('complexity:Q', title='Avg Complexity'),
-        size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[100, 1000])), 
-        color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(domain=[0, 60], range=['#deebf7', '#08306b'], clamp=True)), 
-        shape=alt.Shape('cluster:N', title='Group Shape', scale=alt.Scale(domain=['Copier', 'Needer', 'Improver'], range=['square', 'circle', 'cross'])),
-        tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
-    ).properties(title="Participant Clusters (Shape=Group, Color=Time)")
-    
-    st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
-    st.altair_chart(chart_bubble, use_container_width=True)
+st.subheader("Participant Clusters: Copiers vs Improvers vs No-AI")
 
-    # Debug Data Table
-    with st.expander("Debug: Check Cluster Classification & Data"):
-        st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
-        st.markdown("Filter Logic: **Copier** (Sim > 0.5), **Needer** (Sim <= 0.5 & Comp < 100), **Improver** (Sim <= 0.5 & Comp >= 100)")
-        debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
-        st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
+# Calculate 'avg_similarity' for each user
+user_sim = df[df['ai_used']==True].groupby('prolific_id')['ai_similarity'].mean().reset_index()
+
+# Robust Merge: Ensure 'avg_similarity' exists even if user_sim is empty or merge acts up
+if not user_sim.empty:
+    user_agg = pd.merge(user_agg, user_sim, on='prolific_id', how='left')
+else:
+    user_agg['avg_similarity'] = 0.0
+    
+if 'avg_similarity' not in user_agg.columns:
+    user_agg['avg_similarity'] = 0.0
+
+user_agg['avg_similarity'] = user_agg['avg_similarity'].fillna(0)
+
+# Define Classification (Round 19 Logic)
+# Copier: AI Score > 0.6 AND Complexity < 50
+# Improver: Complexity >= 100 (if not Copier)
+# Needer: Everyone else (including No AI)
+
+def classify_user(row):
+    if row['ai_score'] > 0.6 and row['complexity'] < 50:
+        return 'Copier'
+    elif row['complexity'] >= 100:
+        return 'Improver'
+    else:
+        return 'Needer'
+
+user_agg['cluster'] = user_agg.apply(classify_user, axis=1)
+
+# Unified Color Scheme: Blue Gradients by Time
+# We use Altair's built-in scale for this.
+
+chart_bubble = alt.Chart(user_agg).mark_point(filled=True, opacity=0.8, size=200).encode(
+    x=alt.X('ai_score:Q', title='AI Score (% usage)'),
+    y=alt.Y('complexity:Q', title='Avg Complexity'),
+    size=alt.Size('avg_difficulty:Q', title='Avg Difficulty', scale=alt.Scale(range=[100, 1000])), 
+    color=alt.Color('avg_time:Q', title='Avg Time (s)', scale=alt.Scale(scheme='blues', domain=[0, 60], clamp=True)), 
+    shape=alt.Shape('cluster:N', title='Group Shape', scale=alt.Scale(
+        domain=['Copier', 'Needer', 'Improver'], 
+        range=['square', 'circle', 'triangle']
+    )),
+    tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
+).properties(title="Participant Clusters (Shape=Group, Color=Time)")
+
+st.altair_chart(chart_bubble, use_container_width=True)
+
+# Debug Data Table
+with st.expander("Debug: Check Cluster Classification & Data"):
+    st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
+    st.markdown("Filter Logic: **Copier** (AI>0.6 & Comp<50), **Improver** (Comp>=100), **Needer** (Everyone else)")
+    debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
+    st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
+
 
 
 # Raw Data
