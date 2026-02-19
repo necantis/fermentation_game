@@ -495,14 +495,49 @@ chart_bubble = alt.Chart(user_agg).mark_point(filled=True, opacity=0.8, size=200
         range=['square', 'circle', 'triangle']
     )),
     tooltip=['prolific_id', 'cluster', 'ai_score', 'complexity', 'avg_difficulty', 'avg_time', 'avg_similarity']
-).properties(title="Participant Clusters (Shape=Group, Color=Time)", height=800)
+).properties(title="Participant Clusters: Users -Copiers and Improvers", height=800)
 
-st.altair_chart(chart_bubble, use_container_width=True)
+# Trend Lines and R2 Calculation
+charts = [chart_bubble]
+clusters = ['Copier', 'Users', 'Improver']
+colors = {'Copier': 'red', 'Users': 'blue', 'Improver': 'green'} # Text colors for formula
+
+for cluster in clusters:
+    cluster_data = user_agg[user_agg['cluster'] == cluster]
+    if len(cluster_data) > 1:
+        # Calculate Regression
+        slope, intercept, r_value, p_value, std_err = stats.linregress(cluster_data['ai_score'], cluster_data['complexity'])
+        r_squared = r_value**2
+        
+        # Trend Line
+        line = chart_bubble.transform_filter(
+            alt.datum.cluster == cluster
+        ).transform_regression(
+            'ai_score', 'complexity', method='linear'
+        ).mark_line(color='black', strokeDash=[5, 5]) # Dashed black line for trend
+        
+        charts.append(line)
+        
+        # Text Label (Formula + R2) - Positioned near the end of the line or fixed location?
+        # Let's put it at the max AI score for that cluster
+        max_ai = cluster_data['ai_score'].max()
+        pred_comp = slope * max_ai + intercept
+        
+        label = f"{cluster}: y={slope:.2f}x+{intercept:.2f}, R²={r_squared:.2f}"
+        
+        text = alt.Chart(pd.DataFrame({'x': [max_ai], 'y': [pred_comp], 'label': [label], 'cluster': [cluster]})).mark_text(
+            align='left', baseline='middle', dx=5, color=colors.get(cluster, 'black')
+        ).encode(
+            x='x:Q', y='y:Q', text='label:N'
+        )
+        charts.append(text)
+
+st.altair_chart(alt.layer(*charts), use_container_width=True)
 
 # Debug Data Table
 with st.expander("Debug: Check Cluster Classification & Data"):
     st.markdown(f"**Global Median Similarity:** {df[df['ai_used']==True]['ai_similarity'].median():.4f}")
-    st.markdown("Filter Logic: **Copier** (AI>0.6 & Comp<50), **Improver** (Comp>=100), **Needer** (Everyone else)")
+    st.markdown("Filter Logic: **Copier** (AI>0 & Comp<40), **Improver** (AI>0 & Comp>80), **Users** (Everyone else)")
     debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
     st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
