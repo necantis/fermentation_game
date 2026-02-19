@@ -557,6 +557,9 @@ with st.expander("Debug: Check Cluster Classification & Data"):
     else:
         st.write("No clusters had enough data (>1 point) for regression.")
         
+    st.write("**Copier/Improver Raw Data (for R2 Check):**")
+    st.dataframe(user_agg[user_agg['cluster'].isin(['Copier', 'Improver'])][['prolific_id', 'cluster', 'ai_score', 'complexity']])
+
     debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
     st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
 
