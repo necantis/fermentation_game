@@ -535,7 +535,7 @@ for cluster in clusters:
         # Text Label
         max_ai = cluster_data['ai_score'].max()
         pred_comp = slope * max_ai + intercept
-        label = f"{cluster}: y={slope:.2f}x+{intercept:.2f}, R²={r_squared:.2f}"
+        label = f"{cluster}: y={slope:.2f}x+{intercept:.2f}, R²={r_squared:.4f}"
         
         text = alt.Chart(pd.DataFrame({'x': [max_ai], 'y': [pred_comp], 'label': [label], 'cluster': [cluster]})).mark_text(
             align='left', baseline='middle', dx=5, color=colors.get(cluster, 'black'), fontSize=14, fontWeight='bold'
@@ -559,6 +559,12 @@ with st.expander("Debug: Check Cluster Classification & Data"):
         
     st.write("**Copier/Improver Raw Data (for R2 Check):**")
     st.dataframe(user_agg[user_agg['cluster'].isin(['Copier', 'Improver'])][['prolific_id', 'cluster', 'ai_score', 'complexity']])
+    
+    st.write("**Regression Input Vectors (Check for Constant Values):**")
+    for cluster in clusters:
+        cd = user_agg[user_agg['cluster'] == cluster]
+        if len(cd) > 1:
+            st.write(f"Cluster: {cluster}, X (AI Score): {cd['ai_score'].tolist()}, Y (Complexity): {cd['complexity'].tolist()}")
 
     debug_cols = ['prolific_id', 'ai_score', 'avg_similarity', 'complexity', 'cluster', 'avg_time']
     st.dataframe(user_agg[debug_cols].sort_values('avg_similarity', ascending=False))
