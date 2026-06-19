@@ -46,7 +46,7 @@ streamlit run dashboard.py
 
 ## Notes for future coding agents
 
-- There is currently no repository README, test suite, linter config, or build pipeline in this clone.
+- No automated test suite, linter config, or build pipeline was found in this clone.
 - The main gameplay logic is data-driven from `SCENARIO_DATA` and `ACTIONS` in `streamlit_app/game_logic.py`.
 - Winning the game means resolving causes until the state transitions to scenario `1` (`All Good`).
 - `dashboard.py` expects the current CSV schema defined in its `GAME_LOG_COLS` and `FEEDBACK_LOG_COLS` lists.
