@@ -1,0 +1,54 @@
+# Walkthrough - Streamlit Presentation Dashboard, Stats & UI-UX Enhancements
+
+This document summarizes the implementations completed for the **Presentation** scientific conference dashboard, including modular layouts, data pipelines, statistical checks, and interactive visual/functional components.
+
+---
+
+## Part 1: Scientific Presentation Architecture
+
+We created the modular dashboard folder: `c:\Users\maria\Documents\GitHub\fermentation_game\Presentation\`
+
+- **[app.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/app.py)** — Streamlit main entrypoint, orchestrating state mapping, style injections, data cache loaders, and 6 clean numbered tabs (0 to 5).
+- **[config.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/config.py)** — Layout setups, custom academic dark mode Plotly template (`scientific_presentation`), and HSL palettes.
+- **[state.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/state.py)** — State management dictionary tracking active slide index, filters, and simulator/bootstrap settings.
+- **[styles.css](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/styles.css)** — Academic styles implementing Inter/Outfit fonts, glassmorphic layout wrappers (`.glass-card`), hover highlights, and fade-in entry transitions. Also includes class definitions for the responsive `.iframe-container`.
+
+---
+
+## Part 2: Data-Science Execution Pipeline & Visuals
+
+We constructed a dependency-free statistical calculation and text feature engineering pipeline to load, unify, and analyze experimental scores and logs:
+
+- **[lonza_pipeline.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/lonza_pipeline.py)** — Ingests and fuzzy matches `Lonza_Scores.csv` and `Lonza_Wooclap.csv` using Python's built-in `difflib` (no package installation required). Extracts lightweight TF-IDF features and fits Ridge regression models to predict votes. Bootstraps resamples (400 iterations) to pre-render feature confidence intervals for discrete slider thresholds (`[0.80, 0.85, 0.90, 0.95, 0.99]`), preventing lag.
+- **[data_loader.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/data_loader.py)** — Incorporates cached loading of unified Lonza scores and stats (`load_lonza_and_stats()`).
+
+### Plotly Visualizations & Statistical Tests
+We integrated three interactive Plotly figures:
+1. **Figure 1 (Tab 1 — "1. H1: Task Duration")**: A dual-axis scatter plot showing AI usage versus average task duration (left axis, blue) and perceived effort (right axis, orange).
+2. **Figure 2 (Tab 4 — "4. Strategy Clusters")**: An interactive bubble chart showing player clusters, sized by difficulty and colored by duration.
+3. **Figure 3 (Tab 5 — "5. Forecast Simulator")**: A bootstrap feature importance bar chart with confidence interval error bars. Moving the confidence slider selects pre-rendered statistics instantly with zero lag.
+4. **Independent T-Tests & Correlations**: Contrasts Phase 1 baseline traces with Phase 2 Cognitive Forcing Function groups (Active CFF where users edited suggestions vs. Control/No AI).
+
+---
+
+## Part 3: UI-UX metrics Layout, Calculator, & Iframe
+
+We built and styled new functional layout components:
+1. **Embedded Troubleshoot Game (Tab 2 — "2. H2: Text Complexity")**: Embedded the fermentation game simulator (running locally at `http://localhost:8501/`) inside a responsive iframe container. This allows the presenter to demonstrate the troubleshooting interface in real-time.
+2. **Operational Labor Cost Calculator (Tab 4 — "4. Strategy Clusters")**: Added an interactive labor forecasting tool below Figure 2. It compares annual troubleshooting costs for "Copier" vs "Improver" profiles based on their actual telemetry durations, adjustable with rate and ticket sliders.
+
+---
+
+## Verification & Screenshots
+
+The browser subagent verified that the app renders perfectly. Changing the labor rate and ticket volumes in Tab 4 dynamically scales the Copier and Improver costs instantly.
+
+- **Verification Session Recording**: [Walkthrough WebP Video](file:///C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/presentation_ui_test_1782051254985.webp)
+
+### Key Screenshots
+
+#### Troubleshooting Game Embedded in Tab 2
+![Tab 2 Iframe](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/after_low_level_click.png)
+
+#### Operational Labor Cost Calculator in Tab 4
+![Tab 4 Calculator](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab_4_initial_view.png)

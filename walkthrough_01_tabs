@@ -1,0 +1,51 @@
+# Walkthrough - Streamlit Presentation Dashboard Architecture
+
+This document summarizes the changes made to introduce the new **Presentation** dashboard, styled as a scientific conference presentation deck.
+
+## Changes Made
+
+We created a new, modular architecture directory: `c:\Users\maria\Documents\GitHub\fermentation_game\Presentation\`
+
+### Architectural Files
+1. **[app.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/app.py)**: The main entrypoint. Configures the Streamlit page layout to wide, injects the custom styles, registers the custom Plotly templates, initializes the state, caches the loaded data, and sets up 6 clean tabs.
+2. **[config.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/config.py)**: The page layout config and styling module. Establishes a tailored academic dark mode template for Plotly (`scientific_presentation`) with specific fonts, HSL-derived colorway scales, and axes grid visibility settings.
+3. **[state.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/state.py)**: The central state dictionary tracking user presentation parameters across tabs. Tracks active selection filters, themes, and interactive forecast slider variables.
+4. **[data_loader.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/data_loader.py)**: Data cache manager utilizing localized caching (`@st.cache_data`) for processing gameplay logs and feedback metrics. Computes secondary features like text complexity and AI text similarity scores.
+5. **[styles.css](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/styles.css)**: Academic CSS styling including Outfit/Inter fonts, glassmorphism card classes (`.glass-card`), subtle hover translations, and fade-in entry micro-animations.
+
+### Presentation Tab Modules
+Located in `Presentation/tabs/`:
+- **[tab_0.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/tabs/tab_0.py)**: Abstract and introduction slide.
+- **[tab_1.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/tabs/tab_1.py)**: H1 Coordination Cost (time analysis lines and cumulative bar charts).
+- **[tab_2.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/tabs/tab_2.py)**: H2 Delegation Effect (side-by-side length/complexity boxplots, similarity trend lines).
+- **[tab_3.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/tabs/tab_3.py)**: H3 Efficiency Illusion (difficulty distributions and correlation scatter plots).
+- **[tab_4.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/tabs/tab_4.py)**: Participant Clusters (interactive bubble chart mapping Copiers, Improvers, and Control groups).
+- **[tab_5.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/tabs/tab_5.py)**: Dynamic forecasting simulator with parameter sliders and Gauge indicator subplots.
+
+---
+
+## Validation & Verification
+
+We verified the Streamlit application using a browser subagent that performed testing across all tabs:
+- **Tab 0 Title Slide**: Loaded successfully with clear title typography.
+- **Plotly Visuals (Tabs 1-4)**: The custom template was successfully applied; charts loaded without errors and adapted to the wide viewport.
+- **State Management & Interactivity (Tab 4)**: Filters correctly updated chart markers and scales.
+- **Dynamic Simulator (Tab 5)**: Dragging parameters like the "AI Adoption Rate" updated the gauge widgets immediately.
+
+### Verification Session Recording & Screenshots
+The browser validation session recording is saved here:
+- [Verification WebP Recording](file:///C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/presentation_tabs_test_1782049736159.webp)
+
+Here are the key screen captures demonstrating the visual styling:
+
+#### Initial Academic Abstract Slide (Tab 0)
+![Abstract Slide](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/initial_load_1782049763213.png)
+
+#### Hypothesis 1: Task Duration Plots (Tab 1)
+![Task Duration Plots](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab_1_duration_1782049805341.png)
+
+#### Dynamic Forecast Simulator Gauges at 75% AI Adoption (Tab 5)
+![Gauges 75%](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab_5_gauges_75_1782049913001.png)
+
+#### Dynamic Forecast Simulator Gauges at 35% AI Adoption (Tab 5)
+![Gauges 35%](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab_5_gauges_35_1782049940761.png)

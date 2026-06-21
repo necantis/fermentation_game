@@ -1,0 +1,52 @@
+# Walkthrough - Streamlit Presentation Dashboard & Data Science Analysis
+
+This document summarizes the implementations completed for the **Presentation** scientific conference dashboard, including the custom data cleaning pipeline, statistical checks, and interactive visual components.
+
+---
+
+## Part 1: Scientific Presentation Architecture
+
+We created the modular dashboard folder: `c:\Users\maria\Documents\GitHub\fermentation_game\Presentation\`
+
+- **[app.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/app.py)** — Streamlit main entrypoint, orchestrating state mapping, style injections, data cache loaders, and 6 clean numbered tabs (0 to 5).
+- **[config.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/config.py)** — Layout setups, custom academic dark mode Plotly template (`scientific_presentation`), and HSL palettes.
+- **[state.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/state.py)** — State management dictionary tracking active slide index, filters, and simulator/bootstrap settings.
+- **[styles.css](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/styles.css)** — Academic styles implementing Inter/Outfit fonts, glassmorphic layout wrappers (`.glass-card`), hover highlights, and fade-in entry transitions.
+
+---
+
+## Part 2: Data-Science Execution Pipeline & Visuals
+
+We constructed a dependency-free statistical calculation and text feature engineering pipeline to load, unify, and analyze experimental scores and logs:
+
+- **[lonza_pipeline.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/lonza_pipeline.py)** — Ingests and fuzzy matches `Lonza_Scores.csv` and `Lonza_Wooclap.csv` using Python's built-in `difflib` (no package installation required). Extracts lightweight TF-IDF features and fits Ridge regression models to predict votes. Bootstraps resamples (400 iterations) to pre-render feature confidence intervals for discrete slider thresholds (`[0.80, 0.85, 0.90, 0.95, 0.99]`), preventing lag.
+- **[data_loader.py](file:///c:/Users/maria/Documents/GitHub/fermentation_game/Presentation/data_loader.py)** — Incorporates cached loading of unified Lonza scores and stats (`load_lonza_and_stats()`).
+
+### Plotly Visualizations & Statistical Tests
+We integrated three new interactive Plotly figures:
+1. **Figure 1 (Tab 1 — "1. H1: Task Duration")**: A dual-axis scatter plot showing AI usage versus average task duration (left axis, blue) and perceived effort (right axis, orange).
+2. **Figure 2 (Tab 4 — "4. Strategy Clusters")**: An interactive bubble chart showing player clusters, sized by difficulty and colored by duration.
+3. **Figure 3 (Tab 5 — "5. Forecast Simulator")**: A bootstrap feature importance bar chart with confidence interval error bars. Moving the confidence slider selects pre-rendered statistics instantly with zero lag.
+4. **Independent T-Tests & Correlations**: Contrasts Phase 1 baseline traces with Phase 2 Cognitive Forcing Function groups (Active CFF where users edited suggestions vs. Control/No AI).
+
+---
+
+## Verification & Screenshots
+
+The browser subagent verified that the app renders perfectly. Changing the confidence interval slider in Tab 5 updates the Plotly error bars instantly with zero delay, verifying the pre-rendered calculations.
+
+- **Verification Session Recording**: [Walkthrough WebP Video](file:///C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/presentation_fix_test_1782050704369.webp)
+
+### Key Screenshots
+
+#### Dual-Axis Task Duration vs. Effort (Figure 1)
+![Figure 1](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab1_figure1_1782050742782.png)
+
+#### Strategy Clusters Bubble Plot (Figure 2)
+![Figure 2](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab4_figure2_1782050773009.png)
+
+#### Bootstrap Feature Importance at 95% Confidence (Figure 3)
+![Figure 3 Initial](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab5_figure3_initial_1782050807908.png)
+
+#### Bootstrap Feature Importance at 90% Confidence (Figure 3, Instant Update)
+![Figure 3 Updated](/C:/Users/maria/.gemini/antigravity-ide/brain/bd44db86-f070-40a5-80b2-83cca025400a/tab5_figure3_updated_1782050823657.png)
