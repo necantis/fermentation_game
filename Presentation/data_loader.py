@@ -221,8 +221,18 @@ def load_lonza_and_stats():
     w_path = os.path.join(_repo, "Tests", "Workshop_Wooclap.csv")
     s_path = os.path.join(_repo, "Tests", "Workshop_Scores.csv")
         
-    df_unified = ingest_and_unify_lonza(w_path, s_path)
-    bootstrap_data = pre_render_bootstrap_importance(df_unified)
+    try:
+        df_unified = ingest_and_unify_lonza(w_path, s_path)
+        bootstrap_data = pre_render_bootstrap_importance(df_unified)
+    except FileNotFoundError as exc:
+        # Keep the presentation running on environments where workshop CSVs
+        # are not yet deployed (e.g., Streamlit Cloud first boot).
+        df_unified = pd.DataFrame()
+        bootstrap_data = {}
+        stats_data = {
+            "workshop_data_error": str(exc)
+        }
+        return df_unified, bootstrap_data, stats_data
     
     # Load game data for correlations and t-tests
     df_game, _ = load_and_preprocess_data()

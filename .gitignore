@@ -6,6 +6,8 @@ credentials.json
 *.csv
 game_logs_fallback.csv
 feedback_logs_fallback.csv
+!Tests/Workshop_Wooclap.csv
+!Tests/Workshop_Scores.csv
 
 # Python
 __pycache__/

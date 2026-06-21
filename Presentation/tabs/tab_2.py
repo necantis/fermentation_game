@@ -151,7 +151,14 @@ def render_tab_2(df, df_feedback):
     )
 
     # Load unified workshop data
-    df_uni, _, _ = load_lonza_and_stats()
+    df_uni, _, stats_meta = load_lonza_and_stats()
+
+    if stats_meta and isinstance(stats_meta, dict) and stats_meta.get("workshop_data_error"):
+        st.warning(
+            "Workshop files are not available in this deployment yet. "
+            "Tab 3 baseline correlations still render, but the dynamic Ridge model is disabled until "
+            "Tests/Workshop_Wooclap.csv and Tests/Workshop_Scores.csv are present in the deployed repo."
+        )
     
     col_param1, col_param2, col_param3 = st.columns(3)
     

@@ -1,0 +1,61 @@
+Source_File,Category,Original_Text,Translated_Text,Votes
+Q1,"Today, I feel // Heute fühle ich mich",good,good,1
+Q1,"Today, I feel // Heute fühle ich mich",Super,Super,1
+Q1,"Today, I feel // Heute fühle ich mich",müde,tired,0
+Q1,"Today, I feel // Heute fühle ich mich",superduper,superduper,0
+Q1,"Today, I feel // Heute fühle ich mich",ok,ok,0
+Q1,"Today, I feel // Heute fühle ich mich",motiviert,motivated,0
+Q1,"Today, I feel // Heute fühle ich mich",ganz okay,quite okay,0
+Q1,"Today, I feel // Heute fühle ich mich",I feel perfectly well today but there`s no limit for perfection ;),I feel perfectly well today but there`s no limit for perfection ;),0
+Q1,"Today, I feel // Heute fühle ich mich",good,good,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,Kann gefährlich sein. Kann eine Bereicherung sein. Eher als Begleithilfe bzw. Unterstützung. Sollte nicht in den Prozess eingreifen.,Can be dangerous. Can be an enrichment. Rather as an aid or support. Should not intervene in the process.,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,"mit Vorsicht geniessen, kann helfen, kann in die Irre leiten, kostet Arbeitspätze,","enjoy with caution, can help, can mislead, costs jobs,",0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,skeptisch,skeptical,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,kann Routineaufgaben automatisieren und Zeit sparen,can automate routine tasks and save time,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,richtig eingesetzt wahrscheinlich ein Mehrwert,correctly used probably an added value,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,Wenn alles gut funktioniert kann es den neuen Mitarbeitern mehr sicherheit geben,If everything works well it can give new employees more security,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,solange der Mensch mit guten Absichten alles vorgibt eine tolle Sache,as long as humans dictate everything with good intentions a great thing,0
+Q1,Your opinion about artificial intelligence at work // Ihre Meinung zu künstlicher Intelligenz am Arbeitsplatz,beängstigend und bewundernswert zugleich,frightening and admirable at the same time,0
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,Ist es sicher wert zu testen,Is certainly worth testing,3
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,"Wenn es einwandfrei funktioniert, bei prozesskritische schritten","If it works flawlessly, for process-critical steps",2
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,At the current state of it - nowhere,At the current state of it - nowhere,0
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,prozesskritische Schritte als Unterstützung und nur als Unterstützung,process-critical steps as support and only as support,2
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,Batch record,Batch record,1
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,nur bei keine Probleme,only when no problems,1
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,zur schnelleren Fehleranalyse,for faster error analysis,4
+Q6,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,Als Unterstützung im Prozess,As support in the process,4
+Q6,What did you like ? // Was hat Ihnen gefallen?,Hilfe ist direkt da bei Unsicherheit,Help is directly there in case of uncertainty,2
+Q6,What did you like ? // Was hat Ihnen gefallen?,konnte relativ schnell weiterarbeiten,could continue working relatively quickly,1
+Q6,What did you like ? // Was hat Ihnen gefallen?,Graphics were pretty easy to understand,Graphics were pretty easy to understand,1
+Q6,What did you like ? // Was hat Ihnen gefallen?,kann auf die Sprünge helfen,can help get on the right track,2
+Q6,What did you like ? // Was hat Ihnen gefallen?,KI gab gute schnelle einfache Lösungsvorschäge,AI gave good fast simple solution suggestions,2
+Q6,What did you like ? // Was hat Ihnen gefallen?,möglichkeiten,possibilities,1
+Q6,What did you like ? // Was hat Ihnen gefallen?,Gut als Unterstützung,Good as support,2
+Q6,What did you like ? // Was hat Ihnen gefallen?,Hilfe ist direkt da bei Unsicherheit,Help is directly there in case of uncertainty,4
+Q6,What would you change ? // Was würdest du ändern?,"da kann ich noch nicht sagen, Zuwenig Erfahrung mit dem Programm","I can't say that yet, too little experience with the program",3
+Q6,What would you change ? // Was würdest du ändern?,keine all zu komplizierte fachausdrücke benutzen,do not use too complicated technical terms,0
+Q6,What would you change ? // Was würdest du ändern?,Das wird die Zeit zeigen,Time will tell,2
+Q6,What would you change ? // Was würdest du ändern?,Prozesswissen einspeisen. GMP Regeln. Frühwarnsystem. Lexikon oder Nachschlagewerk für aktuelle SOP's etc,Feed in process knowledge. GMP rules. Early warning system. Lexicon or reference work for current SOPs etc,2
+Q6,What would you change ? // Was würdest du ändern?,I`d add tiny explanatory fields to the parameters as it was not self-explanatory to me what those parameters were,I`d add tiny explanatory fields to the parameters as it was not self-explanatory to me what those parameters were,0
+Q6,What would you change ? // Was würdest du ändern?,Eher Hilfe für BPE oder Msat da wir keine Berechtigungen haben so etwas selbst zu entscheiden,Rather help for BPE or MSAT since we have no permissions to decide such things ourselves,1
+Q6,What would you change ? // Was würdest du ändern?,kann ich noch nicht sagen,I cannot say yet,0
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,als Unterstüzung,as support,3
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,- Bei Sicherheit- Als Lexikon- Als Unterstützung - Als Nachschlagewerk aktuellster Versionen - Ist nur so gut wie der Mensch es programmiert. ( Absichten/Wissen ),- For safety - As a lexicon - As support - As a reference work for latest versions - Is only as good as the human programming it. (Intentions/Knowledge),2
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,"Am Ende geht es immer noch um lebende Organismen, welche sich immer anders als erwartet verhalten können. Somit zu starke variable Daten selbst für KI","In the end, it is still about living organisms, which can always behave differently than expected. Thus too strongly variable data even for AI",2
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,"Wenn es funktioniert, dann überall in der Produktion wäre nützlich mit allen Informationen","If it works, then everywhere in production would be useful with all information",1
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,"Grundsätzlich eher für BPEs da wir keine Berechtigungen haben, die Vorschläge auszuführen Hilfreich bei Kommntaren, Trends, Sop finden","Basically rather for BPEs since we have no permissions to execute the suggestions Helpful for comments, trends, finding SOPs",1
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,Bei prozess schritten wo es Parameter verlangt werden,For process steps where parameters are required,1
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,Bei Prozessen die standart sind,For processes that are standard,1
+Q7,Where would you use this type of software ? // Wo würden Sie diese Art von Software einsetzen?,In der Produktion im Puffer prep und Media prep,In production in Buffer prep and Media prep,0
+Q7,What did you like ? // Was hat Ihnen gefallen?,Würde Arbeit erleichtern und somit Zeit einsparen,Would make work easier and thus save time,3
+Q7,What did you like ? // Was hat Ihnen gefallen?,"die Idee ist sicher gut und der KI wird kommen, aber die Angst das viele Leute ihren Job verlieren ist sicher auch im Hinterkopf","the idea is certainly good and AI will come, but the fear that many people will lose their job is certainly also in the back of the mind",3
+Q7,What did you like ? // Was hat Ihnen gefallen?,Einfach zu bedienen,Easy to operate,1
+Q7,What did you like ? // Was hat Ihnen gefallen?,Guter Start in die richtige Richtung,Good start in the right direction,1
+Q7,What did you like ? // Was hat Ihnen gefallen?,KI hat kurz erklärt was nicht gut ist und wie man das behebt,AI briefly explained what is not good and how to fix it,1
+Q7,What would you change ? // Was würdest du ändern?,Die KI sollte von alleine anspringen und nicht erst dan wenn gefargt wird,The AI should start by itself and not only when asked,3
+Q7,What would you change ? // Was würdest du ändern?,die Gefahr ist das die Operatoren nicht mehr selber überlegen und blind auf den KI hören,the danger is that operators no longer think for themselves and blindly listen to the AI,3
+Q7,What would you change ? // Was würdest du ändern?,Wir kennen das Programm zu wenig das zu beantworten,We know the program too little to answer that,2
+Q7,What would you change ? // Was würdest du ändern?,Die Ki sollte uns anweisungen geben wie weiter fahren und nicht uns eine wahl lassen,The AI should give us instructions on how to proceed and not leave us a choice,2
+Q7,What would you change ? // Was würdest du ändern?,kein Kommentar da zu wenig Erfahrung,no comment because too little experience,1
+Q7,What would you change ? // Was würdest du ändern?,"- Zugriff auf bestimmte Bereiche - Grösserer Umfang - Im Allgemeinen Weltweit zusammenspannen","- Access to certain areas - Larger scope - Generally collaborate worldwide",1
+Q7,What would you change ? // Was würdest du ändern?,"Müsste an der Anlage getestet werden, um mehr Aussagekraft zu erhalten",Would have to be tested on the system to obtain more validity,0
