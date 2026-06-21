@@ -5,6 +5,53 @@ import re
 import difflib
 import scipy.stats as stats
 
+
+def _resolve_existing_path(path_value):
+    """Resolve a file path across common launch contexts and return first match."""
+    if not path_value:
+        return None, []
+
+    raw = str(path_value)
+    path_norm = os.path.normpath(raw)
+    basename = os.path.basename(path_norm)
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    repo = os.path.dirname(here)
+    cwd = os.getcwd()
+    parent_cwd = os.path.dirname(cwd)
+
+    candidates = []
+    if os.path.isabs(path_norm):
+        candidates.append(path_norm)
+    else:
+        candidates.extend([
+            path_norm,
+            os.path.join(cwd, path_norm),
+            os.path.join(here, path_norm),
+            os.path.join(repo, path_norm),
+        ])
+
+    candidates.extend([
+        os.path.join(repo, "Tests", basename),
+        os.path.join(cwd, "Tests", basename),
+        os.path.join(parent_cwd, "Tests", basename),
+    ])
+
+    # Keep candidate order stable but remove duplicates.
+    seen = set()
+    unique_candidates = []
+    for cand in candidates:
+        abs_cand = os.path.abspath(cand)
+        if abs_cand not in seen:
+            seen.add(abs_cand)
+            unique_candidates.append(abs_cand)
+
+    for cand in unique_candidates:
+        if os.path.exists(cand):
+            return cand, unique_candidates
+
+    return None, unique_candidates
+
 def greedy_splitter(text):
     if pd.isna(text):
         return []
@@ -30,11 +77,19 @@ def ingest_and_unify_lonza(path_wooclap, path_scores):
     Ingests and unifies Wooclap and Scores datasets.
     Uses difflib fuzzy matching for package-less compatibility.
     """
-    if not os.path.exists(path_wooclap) or not os.path.exists(path_scores):
-        raise FileNotFoundError("Lonza data files not found at specified paths.")
-        
-    df_wooclap = pd.read_csv(path_wooclap)
-    df_scores = pd.read_csv(path_scores)
+    resolved_wooclap, wooclap_candidates = _resolve_existing_path(path_wooclap)
+    resolved_scores, scores_candidates = _resolve_existing_path(path_scores)
+
+    if not resolved_wooclap or not resolved_scores:
+        attempted = wooclap_candidates + [p for p in scores_candidates if p not in wooclap_candidates]
+        attempted_text = "\n".join(f"  - {p}" for p in attempted)
+        raise FileNotFoundError(
+            "Workshop data files not found. Attempted paths:\n"
+            f"{attempted_text}"
+        )
+
+    df_wooclap = pd.read_csv(resolved_wooclap)
+    df_scores = pd.read_csv(resolved_scores)
     
     # Melt Wooclap
     q_cols = [c for c in df_wooclap.columns if c.startswith('Q')]
@@ -220,7 +275,7 @@ def fit_ridge_coeffs(X_df, y_series, alpha=1.0):
 
 def pre_render_bootstrap_importance(df_unified, num_iterations=400):
     """
-    Resamples unified Lonza dataset via bootstrapping to compute feature importance.
+    Resamples unified workshop dataset via bootstrapping to compute feature importance.
     Pre-renders for standard confidence thresholds [0.80, 0.85, 0.90, 0.95, 0.99] to prevent slider lag.
     """
     # Align indices to prevent NaN during concat
@@ -286,9 +341,11 @@ def pre_render_bootstrap_importance(df_unified, num_iterations=400):
     return pre_rendered_data
 
 if __name__ == "__main__":
-    w_path = r"c:\Users\maria\Documents\GitHub\fermentation_game\Tests\Lonza_Wooclap.csv"
-    s_path = r"c:\Users\maria\Documents\GitHub\fermentation_game\Tests\Lonza_Scores.csv"
-    game_path = r"c:\Users\maria\Documents\GitHub\fermentation_game\game_logs_fallback.csv"
+    _here = os.path.dirname(os.path.abspath(__file__))
+    _repo = os.path.dirname(_here)
+    w_path = os.path.join(_repo, "Tests", "Workshop_Wooclap.csv")
+    s_path = os.path.join(_repo, "Tests", "Workshop_Scores.csv")
+    game_path = os.path.join(_repo, "game_logs_fallback.csv")
     
     print("Testing data ingestion...")
     df_uni = ingest_and_unify_lonza(w_path, s_path)

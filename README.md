@@ -1,59 +1,142 @@
-# Fermentation Game
+# Fermentation Game — Repository Guide
 
-Small Streamlit project for a fermentation troubleshooting game plus a separate analytics dashboard.
+Interactive Streamlit suite consisting of two independent applications:
+
+| Application | Entry point | Default port | Purpose |
+|---|---|---|---|
+| **Fermentation Game** | `streamlit_app/app.py` | 8501 | Troubleshooting simulation game |
+| **Analytics Dashboard** | `dashboard.py` | 8501 | Legacy gameplay analytics |
+| **Scientific Presentation** | `Presentation/app.py` | 8502 | Conference research dashboard (6-tab Streamlit app) |
+
+---
 
 ## Repository layout
 
-- `streamlit_app/app.py` — main game UI
-- `streamlit_app/game_logic.py` — scenario data, actions, and state transitions
-- `streamlit_app/ui_components.py` — sensor chart rendering
-- `streamlit_app/data_manager.py` — Google Sheets logging with local CSV fallback
-- `dashboard.py` — analytics dashboard for logged gameplay data
-- `game_logs_fallback.csv` — local gameplay log fallback
-- `feedback_logs_fallback.csv` — local feedback log fallback
-- `v01/` — older front-end prototype assets
+```
+fermentation_game/
+├── streamlit_app/            # ── Game application
+│   ├── app.py                #    Main UI entry point
+│   ├── game_logic.py         #    SCENARIO_DATA dict + ACTIONS list (all game content lives here)
+│   ├── ui_components.py      #    Sensor chart rendering helpers
+│   ├── data_manager.py       #    Google Sheets logging with local CSV fallback
+│   └── requirements.txt      #    Game-specific dependencies
+│
+├── Presentation/             # ── Scientific Presentation (research dashboard)
+│   ├── app.py                #    Entry point — must be run from repo root (see below)
+│   ├── config.py             #    COLOR_PALETTE, page settings, CSS injection, Plotly theme
+│   ├── state.py              #    Central st.session_state dictionary helpers
+│   ├── data_loader.py        #    @st.cache_data loaders for game + workshop data
+│   ├── lonza_pipeline.py     #    Data ingestion, Ridge regression, bootstrap CI (no scikit-learn)
+│   ├── styles.css            #    Glassmorphism / dark-mode CSS
+│   └── tabs/
+│       ├── tab_0.py          #    01. The Overall Picture   (BCG vs Simon theory)
+│       ├── tab_1.py          #    02. The Experiment (Game) (iframe + Pandas template)
+│       ├── tab_2.py          #    03. The Efficiency Illusion (Plotly A/B/C + PLS)
+│       ├── tab_3.py          #    04. Feedback & Actions    (reviewer scorecard)
+│       ├── tab_4.py          #    05. The Second Iteration  (H1/H2/H3 + cost calc)
+│       └── tab_5.py          #    06. Discussion & Conclusions (Toulmin cards)
+│
+├── Tests/
+│   ├── Workshop_Wooclap.csv  #    Survey / Wooclap vote data  (anonymised)
+│   ├── Workshop_Scores.csv   #    Peer-score data             (anonymised)
+│   └── Beacon_Workshop_analysis_v07.ipynb
+│
+├── dashboard.py              # Legacy analytics dashboard
+├── game_logs_fallback.csv    # Local gameplay log (Google Sheets fallback)
+├── feedback_logs_fallback.csv
+├── requirements.txt          # Root-level dependencies
+└── v01/                      # Archived front-end prototype
+```
 
-## Local setup
+---
 
-Install dependencies:
+## Quick start
+
+### 1 — Install dependencies
 
 ```bash
+# From the repository root
 pip install -r requirements.txt
+pip install -r streamlit_app/requirements.txt
 ```
 
-Game-specific dependencies are also listed in `streamlit_app/requirements.txt`.
-
-## Run locally
-
-Start the game:
+### 2 — Start the Fermentation Game
 
 ```bash
-streamlit run streamlit_app/app.py
+# From the repository root
+python -m streamlit run streamlit_app/app.py --server.port 8501
 ```
 
-Start the analytics dashboard:
+### 3 — Start the Scientific Presentation dashboard
 
 ```bash
-streamlit run dashboard.py
+# IMPORTANT: always launch from the repository root, NOT from inside Presentation/
+# The module uses __file__-anchored paths; launching from a subdirectory breaks imports.
+python -m streamlit run Presentation/app.py --server.port 8502
 ```
+
+Open http://localhost:8502 in your browser. The dashboard loads 6 tabs automatically.
+
+### 4 — Start the legacy analytics dashboard
+
+```bash
+python -m streamlit run dashboard.py --server.port 8503
+```
+
+---
+
+## Architecture — Presentation dashboard
+
+### Data flow
+
+```
+Tests/Workshop_Wooclap.csv  ──┐
+Tests/Workshop_Scores.csv   ──┼─► lonza_pipeline.ingest_and_unify_lonza()
+                               │        │
+                               │        ▼
+                               │   data_loader.load_lonza_and_stats()   (@st.cache_data ttl=120 s)
+                               │        │
+game_logs_fallback.csv ────────┼─► data_loader.load_and_preprocess_data()
+                               │        │
+                               └────────┴──► Presentation/app.py ──► tab_0…tab_5
+```
+
+### Key design decisions for agents
+
+- **No scikit-learn.** `lonza_pipeline.py` implements its own Ridge regression solver (`fit_ridge_coeffs`) and TF-IDF generator (`simple_tfidf`) using NumPy/SciPy only. Do not add sklearn imports.
+- **Paths are `__file__`-anchored.** `data_loader.py` and `lonza_pipeline.py` both resolve CSV paths relative to `os.path.abspath(__file__)`, walking up one level to the repo root. Never use `os.getcwd()` or bare relative paths for these files.
+- **Central state dictionary.** All cross-tab state lives in `st.session_state` via helpers in `state.py` (`get_state`, `set_state`). Do not read `st.session_state` directly in tab files.
+- **Color tokens.** All colours come from `config.COLOR_PALETTE`. Never hardcode hex values in tab files.
+- **Tab numbering.** Tabs are displayed as `01`–`06` but the Python files are `tab_0.py`–`tab_5.py` (0-indexed). `app.py` maps `idx 0 → tab_0`, etc.
+- **Caching.** `@st.cache_data(ttl=120)` is applied to both loaders. If you change CSV schemas, clear the Streamlit cache with the top-right menu or restart the server.
+- **Firm anonymisation.** The workshop data firm name has been removed. CSV files are named `Workshop_*.csv`. Do not reintroduce firm-specific names in any user-facing string.
+
+---
+
+## Architecture — Game application
+
+- All game content (scenarios, sensor readings, causes, actions) is declared in **`SCENARIO_DATA`** and **`ACTIONS`** in `streamlit_app/game_logic.py`. Editing these dicts is the only way to add/change game scenarios — no database or external config.
+- Winning the game means resolving causes until the state transitions to scenario `1` (`All Good`).
+- Scenario `6` includes a runtime-patched `wortTemp` key. Preserve this fix if you refactor `game_logic.py`.
+- `dashboard.py` and `streamlit_app/data_manager.py` share the same Google Sheets workbook name (`Beacon_v02`) and the same CSV schema (`GAME_LOG_COLS`, `FEEDBACK_LOG_COLS`). Keep them in sync when changing log structure.
+
+---
 
 ## Data and logging
 
-- The app tries Google Sheets first.
-- If `st.secrets["gcp_service_account"]` is unavailable, it falls back to a local `credentials.json`.
-- If Sheets logging or loading is unavailable, the project falls back to local CSV files in the repository root.
-- Google Sheet name is hard-coded as `Beacon_v02`.
+| Source | Priority | Configuration |
+|---|---|---|
+| Google Sheets | 1st | `st.secrets["gcp_service_account"]` required; workbook = `Beacon_v02` |
+| Local `credentials.json` | 2nd | File must be present in repo root |
+| `game_logs_fallback.csv` / `feedback_logs_fallback.csv` | 3rd | Always present; safe default |
 
-## Notes for future coding agents
+---
 
-- No automated test suite, linter config, or build pipeline was found in this clone.
-- The main gameplay logic is data-driven from `SCENARIO_DATA` and `ACTIONS` in `streamlit_app/game_logic.py`.
-- Winning the game means resolving causes until the state transitions to scenario `1` (`All Good`).
-- `dashboard.py` expects the current CSV schema defined in its `GAME_LOG_COLS` and `FEEDBACK_LOG_COLS` lists.
-- `streamlit_app/data_manager.py` and `dashboard.py` both depend on the same Google Sheets workbook name and fallback CSV files, so keep schema changes synchronized across them.
-- Scenario `6` includes a repaired `wortTemp` key at runtime; preserve that fix or clean up the source data carefully if you refactor it.
+## Known constraints and gotchas
 
-## Known limitations
-
-- No automated tests were found in the repository.
-- Logging paths are simple relative paths, so local runs assume the repository root as the working directory.
+- **No automated test suite or linter config.** Verify changes with `python -c "import py_compile; py_compile.compile('path/to/file.py', doraise=True)"`.
+- **No build pipeline.** All deployments are manual Streamlit runs.
+- **Presentation must be launched from the repo root.** Launching from `Presentation/` breaks the `Presentation.*` package imports in `app.py`.
+- **Streamlit cache** can serve stale data after CSV renames or schema changes. Use the "Clear cache" option in the browser's Streamlit menu or restart the server.
+- **Bootstrap pre-rendering** in `lonza_pipeline.pre_render_bootstrap_importance()` runs 400 resampling iterations on first load (~2–5 s). This is intentional to prevent slider lag. Do not move it inside a slider callback.
+- **Port conventions:** game on 8501, presentation on 8502, legacy dashboard on 8503. Running both game and presentation simultaneously requires explicit `--server.port` flags.

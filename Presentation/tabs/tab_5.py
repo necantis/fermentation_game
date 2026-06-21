@@ -1,263 +1,174 @@
 import streamlit as st
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import numpy as np
-import pandas as pd
 from Presentation.config import COLOR_PALETTE
-from Presentation.state import get_state, set_state
-from Presentation.data_loader import load_lonza_and_stats
 
 def render_tab_5(df, df_feedback):
-    st.markdown("## Forecast Simulator & Feature Importance CIs")
-    st.markdown("Use the simulator to forecast performance, and inspect the bootstrap-derived feature importances from our unified experimental model.")
+    st.markdown(
+        f"""
+        <div class="glass-card" style="padding: 24px; margin-bottom: 25px; border-left: 4px solid {COLOR_PALETTE['secondary']};">
+            <span style="font-size: 0.85rem; letter-spacing: 0.15em; color: {COLOR_PALETTE['secondary']}; font-weight: 600; text-transform: uppercase;">
+                Theoretical Contribution & Conclusions
+            </span>
+            <h2 style="margin-top: 5px; font-weight: 700; font-size: 2.2rem;">
+                Discussion & Concluding Framework
+            </h2>
+            <p style="color: {COLOR_PALETTE['text_muted']}; font-size: 1.05rem; margin-top: 5px; max-width: 950px; line-height: 1.6;">
+                We extend standard organizational frameworks by proving that the capability frontier is dynamic and dependent on behavioral architecture, 
+                demonstrating a trace-measurable metabolic control loop.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 1. Pushing the Boundaries of Organization Science
+    st.markdown("### 1. Pushing the Boundaries of Organization Science")
     
-    # Load pre-rendered Lonza bootstrap calculations to prevent lag
-    _, bootstrap_data, stats_data = load_lonza_and_stats()
-    
-    # ---------------------------------------------
-    # SECTION 1: DYNAMIC FORECAST SIMULATOR
-    # ---------------------------------------------
-    st.markdown("### 1. Fermentation Troubleshooting Forecast Simulator")
-    col_sim_left, col_sim_right = st.columns([0.4, 0.6])
-    
-    with col_sim_left:
+    col_os1, col_os2 = st.columns(2)
+    with col_os1:
         st.markdown(
             f"""
-            <div class="glass-card">
-                <h4 style="margin-bottom: 20px;">Simulator Parameters</h4>
+            <div class="glass-card" style="height: 100%; border-top: 3px solid {COLOR_PALETTE['primary']};">
+                <h4 style="color: {COLOR_PALETTE['primary']}; font-weight: 600;">From Task Placement to Process Intervention</h4>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: {COLOR_PALETTE['text']};">
+                    The <i>Organization Science</i> article treats the jagged capability frontier as fixed based on the task type 
+                    (e.g., brand strategy is outside, shoe ideation is inside). Our CFF "write-before-checking" test proves 
+                    that the frontier is highly dynamic and dependent on <b>behavioral architecture</b>. 
+                    By modifying the interaction interface, organizations can turn a negative performance drop into an active learning process.
+                </p>
             </div>
             """,
             unsafe_allow_html=True
         )
         
-        sim_ai_adoption = st.slider(
-            "AI Adoption Rate (% usage)", 
-            min_value=0.0, max_value=100.0, 
-            value=get_state("sim_ai_adoption"), 
-            step=5.0
+    with col_os2:
+        st.markdown(
+            f"""
+            <div class="glass-card" style="height: 100%; border-top: 3px solid {COLOR_PALETTE['secondary']};">
+                <h4 style="color: {COLOR_PALETTE['secondary']}; font-weight: 600;">Granular Trace-Mapping of Delegation States</h4>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: {COLOR_PALETTE['text']};">
+                    While traditional macro studies rely on total timing outcomes, we utilize Baird & Maruping's (2021) 
+                    framework to track real-time trace transitions. By analyzing text similarity metrics and duration variations dynamically, 
+                    we trace exactly when a user shifts from <b>Appraisal</b> (building trust) to <b>Distribution</b> (lazy hand-off) 
+                    and <b>Coordination</b> (active auditing).
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-        set_state("sim_ai_adoption", sim_ai_adoption)
-        
-        sim_user_skill = st.slider(
-            "Base User Skill Level", 
-            min_value=1.0, max_value=10.0, 
-            value=get_state("sim_user_skill"), 
-            step=0.5
-        )
-        set_state("sim_user_skill", sim_user_skill)
-        
-        sim_ai_accuracy = st.slider(
-            "AI Suggestion Accuracy", 
-            min_value=1.0, max_value=10.0, 
-            value=get_state("sim_ai_accuracy"), 
-            step=0.5
-        )
-        set_state("sim_ai_accuracy", sim_ai_accuracy)
-        
-        sim_complexity = st.slider(
-            "Bioreactor Task Complexity", 
-            min_value=1.0, max_value=10.0, 
-            value=get_state("sim_complexity"), 
-            step=0.5
-        )
-        set_state("sim_complexity", sim_complexity)
-        
-    with col_sim_right:
-        adoption_fraction = sim_ai_adoption / 100.0
-        
-        pred_duration = (
-            120.0 
-            + (sim_complexity * 18.0) 
-            + (adoption_fraction * 45.0) 
-            - (sim_user_skill * 8.0)
-            - (adoption_fraction * sim_ai_accuracy * 4.0)
-        )
-        pred_duration = max(30.0, pred_duration)
-        
-        pred_complexity = (
-            35.0
-            + (sim_user_skill * 6.0)
-            + (adoption_fraction * 25.0)
-            + (sim_ai_accuracy * 4.0)
-            - (adoption_fraction * (10.0 - sim_user_skill) * 5.0)
-        )
-        pred_complexity = max(10.0, pred_complexity)
-        
-        pred_difficulty = (
-            4.5
-            + (sim_complexity * 0.6)
-            - (sim_user_skill * 0.35)
-            - (adoption_fraction * 1.5)
-            - (adoption_fraction * sim_ai_accuracy * 0.15)
-        )
-        pred_difficulty = np.clip(pred_difficulty, 1.0, 10.0)
-        
-        # Render indicators
-        fig = make_subplots(
-            rows=1, cols=3,
-            specs=[[{'type': 'indicator'}, {'type': 'indicator'}, {'type': 'indicator'}]],
-            horizontal_spacing=0.1
-        )
-        
-        fig.add_trace(
-            go.Indicator(
-                mode="gauge+number",
-                value=pred_duration,
-                title={'text': "Expected Duration (s)", 'font': {'size': 13}},
-                gauge={
-                    'axis': {'range': [0, 300], 'tickwidth': 1, 'tickcolor': COLOR_PALETTE['text_muted']},
-                    'bar': {'color': COLOR_PALETTE['no_ai']},
-                    'bgcolor': "rgba(0,0,0,0)",
-                    'borderwidth': 1,
-                    'bordercolor': COLOR_PALETTE['grid']
-                }
-            ),
-            row=1, col=1
-        )
-        
-        fig.add_trace(
-            go.Indicator(
-                mode="gauge+number",
-                value=pred_complexity,
-                title={'text': "Predicted Complexity", 'font': {'size': 13}},
-                gauge={
-                    'axis': {'range': [0, 150], 'tickwidth': 1, 'tickcolor': COLOR_PALETTE['text_muted']},
-                    'bar': {'color': COLOR_PALETTE['primary']},
-                    'bgcolor': "rgba(0,0,0,0)",
-                    'borderwidth': 1,
-                    'bordercolor': COLOR_PALETTE['grid']
-                }
-            ),
-            row=1, col=2
-        )
-        
-        fig.add_trace(
-            go.Indicator(
-                mode="gauge+number",
-                value=pred_difficulty,
-                title={'text': "Perceived Difficulty", 'font': {'size': 13}},
-                gauge={
-                    'axis': {'range': [1, 10], 'tickwidth': 1, 'tickcolor': COLOR_PALETTE['text_muted']},
-                    'bar': {'color': COLOR_PALETTE['success']},
-                    'bgcolor': "rgba(0,0,0,0)",
-                    'borderwidth': 1,
-                    'bordercolor': COLOR_PALETTE['grid']
-                }
-            ),
-            row=1, col=3
-        )
-        
-        fig.update_layout(
-            height=260,
-            paper_bgcolor="rgba(0,0,0,0)",
-            margin=dict(t=20, b=10, l=10, r=10)
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-        
-    # ---------------------------------------------
-    # SECTION 2: BOOTSTRAP FEATURE IMPORTANCE
-    # ---------------------------------------------
-    st.markdown("---")
-    st.markdown("### 2. Figure 3: Bootstrap Feature Importance Interval Visualization")
-    st.markdown("This section displays the bootstrapped regression coefficients (predicting participant ideas' vote scores) with confidence intervals. Adjust the confidence level slider to update the error bars instantly from pre-rendered calculations.")
+
+    # 2. Improving the Metabolic Framework (Xylem vs Phloem corporate strategy translation)
+    st.markdown("### 2. The Trace-Measurable Metabolic Architecture Framework")
+    st.markdown(
+        "Integrating these elements refines our core model—the trace-measurable metabolic architecture that balances "
+        "structural viscosity with localized environmental inputs. To translate the botanical metaphors into corporate strategy terms:"
+    )
+
+    # ASCII metabolic loop
+    st.markdown(
+        f"""
+        <pre style="font-family: monospace; font-size: 0.9rem; line-height: 1.4; color: {COLOR_PALETTE['primary']}; background: rgba(0,0,0,0.25); padding: 15px; border-radius: 8px; border: 1px solid {COLOR_PALETTE['grid']}; overflow-x: auto;">
+                            METABOLIC ACCELERATION LOOP
+                            
+      [Xylem Friction] ───► [Write-First Filter] ───► [Phloem Governance]
+       (Raw Local Influx)    (Engineered Viscosity)    (AI Strategic Push)
+                ▲                                               │
+                └─────────────────── [Improver State] ──────────┘
+                             (Optimal Metabolic Exchange)
+        </pre>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col_met_1, col_met_2 = st.columns(2)
     
-    if bootstrap_data:
-        # Confidence slider mapping to pre-rendered keys
-        cl_selection = st.select_slider(
-            "Select Bootstrap Confidence Level (1 - α)",
-            options=[0.80, 0.85, 0.90, 0.95, 0.99],
-            value=0.95,
-            format_func=lambda x: f"{int(x * 100)}%"
+    with col_met_1:
+        st.markdown(
+            f"""
+            <div class="glass-card" style="height: 100%;">
+                <h4 style="color: {COLOR_PALETTE['success']}; font-weight: 600;">Xylem (Solid Wood) ──► Formal Structure</h4>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: {COLOR_PALETTE['text']};">
+                    The localized environmental input (Xylem) represents raw, unstructured frontline data. 
+                    If a user checks the AI immediately and follows its routines, the Phloem instantly overwrites local human variance. 
+                    The "write-first" protocol acts as a xylem filter, <b>protecting local human data inputs</b> in the formal structure 
+                    before they are homogenized by the machine.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
         
-        # Get pre-rendered statistical bounds
-        feat_stats = bootstrap_data[cl_selection]
-        df_stats = pd.DataFrame(feat_stats)
-        
-        # Sort by mean coefficient value
-        df_stats = df_stats.sort_values('mean', ascending=True)
-        
-        # Plotly error bar chart
-        fig_ci = go.Figure()
-        fig_ci.add_trace(
-            go.Bar(
-                y=df_stats['feature'],
-                x=df_stats['mean'],
-                orientation='h',
-                error_x=dict(
-                    type='data',
-                    symmetric=False,
-                    array=df_stats['err_plus'],
-                    arrayminus=df_stats['err_minus'],
-                    color=COLOR_PALETTE['primary'],
-                    thickness=2.5,
-                    width=7
-                ),
-                marker=dict(
-                    color=COLOR_PALETTE['success'],
-                    opacity=0.85,
-                    line=dict(color=COLOR_PALETTE['grid'], width=1)
-                ),
-                name="Mean Importance Coefficient",
-                customdata=np.stack((df_stats['lower'], df_stats['upper']), axis=-1),
-                hovertemplate="<b>Feature</b>: %{y}<br>Mean Coefficient: %{x:.4f}<br>CI Bounds: [%{customdata[0]:.4f}, %{customdata[1]:.4f}]"
-            )
+    with col_met_2:
+        st.markdown(
+            f"""
+            <div class="glass-card" style="height: 100%;">
+                <h4 style="color: {COLOR_PALETTE['warning']}; font-weight: 600;">Phloem (Viscous Bark) ──► Relational Structure</h4>
+                <p style="font-size: 0.95rem; line-height: 1.6; color: {COLOR_PALETTE['text']};">
+                    The AI's strategic push (Phloem) operates within the relational structure of the firm, pushing information dynamically. 
+                    <b>Engineered Structural Viscosity:</b> The "write-first" step is the literal design implementation of beneficial structural viscosity. 
+                    It purposefully slows down the information routing system, driving up perceived difficulty (H3) and coordination costs, 
+                    which keeps the firm operating safely on the calculated Efficient Frontier (y = 1 + x²₁).
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-        
-        fig_ci.update_layout(
-            title=f"Feature Importances with {int(cl_selection * 100)}% Bootstrapped Confidence Intervals",
-            xaxis_title="Bootstrap Mean Coefficient (Ridge Regression Weights)",
-            yaxis_title="Input Model Features",
-            height=450,
-            margin=dict(t=50, b=40, l=150, r=40),
-            xaxis=dict(gridcolor=COLOR_PALETTE['grid'])
-        )
-        
-        st.plotly_chart(fig_ci, use_container_width=True)
-    else:
-        st.warning("Bootstrap feature importance calculations are unavailable.")
-        
-    # Statistical t-tests displays
-    st.markdown("### 3. Quantitative Statistical Contrast")
-    if stats_data:
-        col_t1, col_t2 = st.columns(2)
-        with col_t1:
-            st.markdown(
-                f"""
-                <div class="glass-card" style="height:100%;">
-                    <h4>Independent T-Test (AI vs No-AI)</h4>
-                    <p style="font-size:0.9rem; color:{COLOR_PALETTE['text_muted']};">
-                        Contrasting Phase 1 (Baseline Control) with Phase 2 (AI Treatment group) across rounds.
-                    </p>
-                    <div class="metric-container">
-                        <strong>Task Duration Contrast</strong>:<br>
-                        t-statistic = {stats_data['ttest_duration_t']:.3f} | p-value = {stats_data['ttest_duration_p']:.4f}
-                    </div>
-                    <div class="metric-container" style="border-left-color: {COLOR_PALETTE['warning']};">
-                        <strong>Perceived Effort Contrast</strong>:<br>
-                        t-statistic = {stats_data['ttest_effort_t']:.3f} | p-value = {stats_data['ttest_effort_p']:.4f}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        with col_t2:
-            st.markdown(
-                f"""
-                <div class="glass-card" style="height:100%;">
-                    <h4>Cognitive Forcing Function Contrast</h4>
-                    <p style="font-size:0.9rem; color:{COLOR_PALETTE['text_muted']};">
-                        Contrasting Phase 1 Alt (Passive copy-pasting) with Phase 2 Alt (Active CFF: edited suggestions) within AI users.
-                    </p>
-                    <div class="metric-container" style="border-left-color: {COLOR_PALETTE['secondary']};">
-                        <strong>Active CFF Duration Contrast</strong>:<br>
-                        t-statistic = {stats_data['ttest_alt_t']:.3f} | p-value = {stats_data['ttest_alt_p']:.4f}
-                    </div>
-                    <div style="font-size:0.85rem; color:{COLOR_PALETTE['text_muted']}; margin-top:10px;">
-                        *Active CFF groups show a longer duration trend, confirming the time penalty associated with cognitive checks.
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+
+    st.markdown(
+        f"""
+        <div class="glass-card" style="margin-top: 15px;">
+            <p style="margin: 0; line-height: 1.6; color: {COLOR_PALETTE['text']};">
+                <b>Trace-Measurable Metabolic Control:</b> By tracking real-time dashboard metrics—such as answer length, complexity, and semantic similarity—our 
+                architecture can programmatically flag when a node is slipping into passive copying (inducing structural liquefaction) versus active improving. 
+                This allows the organization to tune its internal constraints dynamically based on live trace data.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 3. Conclusion (Toulmin Framework)
+    st.markdown("---")
+    st.markdown("### 3. Conclusion (Toulmin Validation Framework)")
+    st.markdown("To provide rigorous validation, we formalize our thesis using the Toulmin framework of argumentation:")
+
+    toulmin_html = f"""
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+        <div class="glass-card" style="border-left: 4px solid {COLOR_PALETTE['primary']};">
+            <h5 style="color: {COLOR_PALETTE['primary']}; font-weight: 600; margin: 0 0 5px 0;">Claim</h5>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.5;">
+                Maximizing productivity in human-AI systems requires organizations to discard linear speed assumptions and design interactive workflows that enforce structural viscosity through cognitive forcing functions.
+            </p>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid {COLOR_PALETTE['success']};">
+            <h5 style="color: {COLOR_PALETTE['success']}; font-weight: 600; margin: 0 0 5px 0;">Data</h5>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.5;">
+                Empirical data shows unchecked AI access causes severe automation bias outside the frontier. Meanwhile, our CFF test proves "write-before-AI" expands output length (from 11.29 to 122.38 chars) and shatters the "Efficiency Illusion" by realigning effort with perceived difficulty (4.65 vs 3.78).
+            </p>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid {COLOR_PALETTE['warning']};">
+            <h5 style="color: {COLOR_PALETTE['warning']}; font-weight: 600; margin: 0 0 5px 0;">Warrant</h5>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.5;">
+                Forcing human formulation prior to machine exposure blocks passive cognitive offloading, compelling users to execute independent analytical synthesis before initiating the "read-verify-decide" coordination loop.
+            </p>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid {COLOR_PALETTE['secondary']};">
+            <h5 style="color: {COLOR_PALETTE['secondary']}; font-weight: 600; margin: 0 0 5px 0;">Backing</h5>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.5;">
+                Information Processing Theory and delegation frameworks (Baird & Maruping, 2021) demonstrate that agentic artifacts introduce hidden communication and monitoring taxes that bottleneck human cognitive processing if left unmanaged.
+            </p>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid {COLOR_PALETTE['no_ai']};">
+            <h5 style="color: {COLOR_PALETTE['no_ai']}; font-weight: 600; margin: 0 0 5px 0;">Rebuttal</h5>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.5;">
+                While traditional frameworks suggest that any latency or subjective task difficulty is inefficient, our trace-based analytics prove that this calculated viscosity prevents decoupling and protects local human nodes from total structural liquefaction.
+            </p>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid {COLOR_PALETTE['text_muted']};">
+            <h5 style="color: {COLOR_PALETTE['text_muted']}; font-weight: 600; margin: 0 0 5px 0;">Qualifier</h5>
+            <p style="margin: 0; font-size: 0.9rem; line-height: 1.5;">
+                Consequently, this behavioral orchestration applies specifically to knowledge-intensive, high-stakes professional workflows where preserving human judgment and raw sensory data integrity takes priority over pure execution speed.
+            </p>
+        </div>
+    </div>
+    """
+    st.markdown(toulmin_html, unsafe_allow_html=True)

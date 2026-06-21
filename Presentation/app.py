@@ -51,14 +51,14 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Generate 6 clean tabs numbered 0 through 5
+# Generate 6 clean tabs numbered 01 through 06
 tabs = st.tabs([
-    "0. Title Slide",
-    "1. H1: Task Duration",
-    "2. H2: Text Complexity",
-    "3. H3: Efficiency Illusion",
-    "4. Strategy Clusters",
-    "5. Forecast Simulator"
+    "01. The Overall Picture",
+    "02. The Experiment (Game)",
+    "03. The Efficiency Illusion (Data)",
+    "04. Feedback & Actions",
+    "05. The Second Iteration (Results)",
+    "06. Discussion & Conclusions"
 ])
 
 # Map active tab changes to the central state dictionary

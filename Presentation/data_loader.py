@@ -7,7 +7,7 @@ from google.oauth2.service_account import Credentials
 import os
 import difflib
 
-# Import Lonza pipeline functions
+# Import workshop pipeline functions
 from Presentation.lonza_pipeline import ingest_and_unify_lonza, calculate_correlations_and_ttests, pre_render_bootstrap_importance
 
 # Constants (matching project defaults)
@@ -208,19 +208,18 @@ def calculate_ttest_summary(data, group_col, value_col, group1_val=True, group2_
         "message": msg
     }
 
-@st.cache_data(ttl=120)
+@st.cache_data(show_spinner="Loading workshop data…")
 def load_lonza_and_stats():
     """
-    Ingests and cleans Lonza files, computes pre-rendered bootstrap stats, 
+    Ingests and cleans workshop files, computes pre-rendered bootstrap stats, 
     and returns (df_unified, bootstrap_data, stats_data).
     """
-    # Locate paths
-    w_path = "Tests/Lonza_Wooclap.csv"
-    s_path = "Tests/Lonza_Scores.csv"
-    if not os.path.exists(w_path):
-        w_path = os.path.join("..", w_path)
-    if not os.path.exists(s_path):
-        s_path = os.path.join("..", s_path)
+    # Locate paths — anchored to this file's location so they always resolve
+    # correctly regardless of what directory Streamlit is launched from.
+    _here = os.path.dirname(os.path.abspath(__file__))          # .../Presentation
+    _repo = os.path.dirname(_here)                               # .../fermentation_game
+    w_path = os.path.join(_repo, "Tests", "Workshop_Wooclap.csv")
+    s_path = os.path.join(_repo, "Tests", "Workshop_Scores.csv")
         
     df_unified = ingest_and_unify_lonza(w_path, s_path)
     bootstrap_data = pre_render_bootstrap_importance(df_unified)
