@@ -50,7 +50,7 @@ def render_tab_3(df, df_feedback):
         {
             "Reviewer": "R2",
             "Identified Issue": "Research gap is unclear.",
-            "Assigned Action Plan / Technical Modification": "Add an introduction detailing prior works that treat AI as a purely linear speed accelerator (e.g., standard generative AI benchmarks) while omitting the human monitoring overhead.",
+            "Assigned Action Plan / Technical Modification": "Add an introduction detailing prior works that treat AI as a purely linear speed accelerator (e.g., standard generative AI benchmarks) while omitting the human monitoring overhead (see <a href='https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3746564' target='_blank' style='color: " + COLOR_PALETTE['primary'] + "; text-decoration: underline;'>Dell'Acqua et al., 2020</a>).",
             "Status": "Main Text"
         },
         {
@@ -74,7 +74,7 @@ def render_tab_3(df, df_feedback):
         {
             "Reviewer": "R2",
             "Identified Issue": "Theoretical contributions lack clarity.",
-            "Assigned Action Plan / Technical Modification": "Formalize the 'Efficiency Illusion' as an explicit theoretical construct: the cognitive divergence where Subjective Perceived Effort drops via offloading while Objective Coordination Costs increase via continuous auditing.",
+            "Assigned Action Plan / Technical Modification": "Formalize the 'Efficiency Illusion' as an explicit theoretical construct: the cognitive divergence where Subjective Perceived Effort drops via offloading while Objective Coordination Costs increase via continuous auditing (see <a href='https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6097646' target='_blank' style='color: " + COLOR_PALETTE['primary'] + "; text-decoration: underline;'>Shaw et al., 2026</a>).",
             "Status": "Conclusion"
         }
     ]
@@ -94,30 +94,28 @@ def render_tab_3(df, df_feedback):
     # Render table in HTML format for glassmorphic style
     table_rows = ""
     for idx, r in df_disp.iterrows():
-        table_rows += f"""
-        <tr style="border-bottom: 1px solid {COLOR_PALETTE['grid']};">
-            <td style="padding: 12px; font-weight: bold; color: {COLOR_PALETTE['primary']};">{r['Reviewer']}</td>
-            <td style="padding: 12px; line-height: 1.5;">{r['Identified Issue']}</td>
-            <td style="padding: 12px; line-height: 1.5; color: {COLOR_PALETTE['text']};">{r['Assigned Action Plan / Technical Modification']}</td>
-            <td style="padding: 12px;"><span style="background: rgba(168, 85, 247, 0.2); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; color: {COLOR_PALETTE['secondary']}; font-weight: 500;">{r['Status']}</span></td>
-        </tr>
-        """
+        table_rows += f"""<tr style="border-bottom: 1px solid {COLOR_PALETTE['grid']}; color: {COLOR_PALETTE['text']};">
+<td style="padding: 12px; font-weight: bold; color: {COLOR_PALETTE['primary']};">{r['Reviewer']}</td>
+<td style="padding: 12px; line-height: 1.5; color: {COLOR_PALETTE['text']};">{r['Identified Issue']}</td>
+<td style="padding: 12px; line-height: 1.5; color: {COLOR_PALETTE['text']};">{r['Assigned Action Plan / Technical Modification']}</td>
+<td style="padding: 12px;"><span style="background: rgba(168, 85, 247, 0.2); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; color: {COLOR_PALETTE['secondary']}; font-weight: 500;">{r['Status']}</span></td>
+</tr>"""
 
     st.markdown(
-        f"""
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem; margin-top: 10px;">
-            <thead>
-                <tr style="border-bottom: 2px solid {COLOR_PALETTE['grid']}; text-align: left; color: {COLOR_PALETTE['primary']};">
-                    <th style="padding: 12px; font-weight: 600; width: 10%;">Reviewer</th>
-                    <th style="padding: 12px; font-weight: 600; width: 35%;">Identified Issue</th>
-                    <th style="padding: 12px; font-weight: 600; width: 40%;">Technical Modification / Action Plan</th>
-                    <th style="padding: 12px; font-weight: 600; width: 15%;">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {table_rows if table_rows else f"<tr><td colspan='4' style='padding:12px; text-align:center;'>No matching issues.</td></tr>"}
-            </tbody>
-        </table>
-        """,
+        f"""<div class="glass-card">
+<table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+<thead>
+<tr style="border-bottom: 2px solid {COLOR_PALETTE['grid']}; text-align: left; color: {COLOR_PALETTE['primary']};">
+<th style="padding: 12px; font-weight: 600; width: 10%;">Reviewer</th>
+<th style="padding: 12px; font-weight: 600; width: 35%;">Identified Issue</th>
+<th style="padding: 12px; font-weight: 600; width: 40%;">Technical Modification / Action Plan</th>
+<th style="padding: 12px; font-weight: 600; width: 15%;">Status</th>
+</tr>
+</thead>
+<tbody>
+{table_rows if table_rows else f"<tr><td colspan='4' style='padding:12px; text-align:center; color: {COLOR_PALETTE['text_muted']};'>No matching issues.</td></tr>"}
+</tbody>
+</table>
+</div>""",
         unsafe_allow_html=True
     )

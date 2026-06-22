@@ -107,9 +107,14 @@ game_logs_fallback.csv ────────┼─► data_loader.load_and_pr
 - **Paths are `__file__`-anchored.** `data_loader.py` and `lonza_pipeline.py` both resolve CSV paths relative to `os.path.abspath(__file__)`, walking up one level to the repo root. Never use `os.getcwd()` or bare relative paths for these files.
 - **Central state dictionary.** All cross-tab state lives in `st.session_state` via helpers in `state.py` (`get_state`, `set_state`). Do not read `st.session_state` directly in tab files.
 - **Color tokens.** All colours come from `config.COLOR_PALETTE`. Never hardcode hex values in tab files.
+- **Accessibility & Contrast.** The application uses a dark academic palette with accessibility rules in `styles.css`.
+  * **Headings:** Do not use CSS `-webkit-background-clip: text` or transparent text fill gradients, as they fail on certain browsers and projectors. Use solid colors like `#0ea5e9`.
+  * **Text inside Cards:** Paragraphs (`p`) and lists (`li`, `ul`, `ol`) inside `.glass-card` elements must inherit the `#e2e8f0` text color defined in `styles.css` to maintain legibility on dark card backgrounds under any light/dark theme settings.
+- **HTML Indentation in Markdown.** When rendering custom HTML structures via `st.markdown(..., unsafe_allow_html=True)`, **never indent the HTML tags** (align the lines to the absolute left margin of the f-string). Indenting HTML by 4 or more spaces will cause the Markdown parser to treat them as preformatted code blocks (`<pre><code>`), exposing raw tags like `</tbody>` or `</table>` on the interface.
 - **Tab numbering.** Tabs are displayed as `01`–`06` but the Python files are `tab_0.py`–`tab_5.py` (0-indexed). `app.py` maps `idx 0 → tab_0`, etc.
 - **Caching.** `@st.cache_data(ttl=120)` is applied to both loaders. If you change CSV schemas, clear the Streamlit cache with the top-right menu or restart the server.
-- **Firm anonymisation.** The workshop data firm name has been removed. CSV files are named `Workshop_*.csv`. Do not reintroduce firm-specific names in any user-facing string.
+- **Firm anonymisation.** The firm name has been removed to keep the presentation anonymous. Workshop CSV files are named `Workshop_*.csv`. Do not reintroduce firm-specific names (such as "Lonza") in any user-facing strings or telemetry labels.
+
 
 ---
 

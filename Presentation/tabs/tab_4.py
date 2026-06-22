@@ -97,8 +97,13 @@ def render_tab_4(df, df_feedback):
     # 3. Strategy Deep Dive: Copiers vs Improvers
     st.markdown("### 3. Strategy Deep Dive: Copiers vs. Improvers")
     st.markdown(
+        """<a href="https://fermentation-game-dashboard.streamlit.app/" target="_blank" class="check-results-btn">check results</a>""",
+        unsafe_allow_html=True
+    )
+    st.markdown(
         f"By calculating the semantic similarity ratio of participant answers against the AI's output (Global Median Similarity: **0.2924**), "
-        "we identify a clear divergence in collaboration strategies:"
+        "we identify a clear divergence in collaboration strategies. Detailed telemetry and interactive visualizations are available on the "
+        "[Fermentation Game Dashboard](https://fermentation-game-dashboard.streamlit.app/):"
     )
     
     col_str_1, col_str_2 = st.columns(2)

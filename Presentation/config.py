@@ -13,13 +13,13 @@ COLOR_PALETTE = {
     "primary": "#38bdf8",       # Sky Blue
     "secondary": "#a855f7",     # Purple
     "no_ai": "#f43f5e",         # Rose (Control)
-    "ai": "#0284c7",            # Celestial Blue (Treatment)
-    "success": "#10b981",       # Emerald
-    "warning": "#f59e0b",       # Amber
+    "ai": "#38bdf8",            # Sky Blue (Treatment) - updated to primary for accessibility/projector contrast
+    "success": "#f59e0b",       # Amber - updated from #10b981 to avoid red-green CVD conflict
+    "warning": "#fb923c",       # Orange - updated from #f59e0b to distinguish from success
     "background": "#0f172a",    # Dark Slate
     "card_bg": "#1e293b",       # Slate 800
     "text": "#f1f5f9",          # Light gray
-    "text_muted": "#94a3b8",    # Muted gray
+    "text_muted": "#b0bec5",    # Lighten from #94a3b8 for card contrast (WCAG AA compliance)
     "grid": "rgba(255, 255, 255, 0.08)",
 }
 
@@ -65,8 +65,8 @@ def setup_plotly_theme():
         ),
         colorway=[
             COLOR_PALETTE["primary"],
-            COLOR_PALETTE["no_ai"],
             COLOR_PALETTE["success"],
+            COLOR_PALETTE["no_ai"],
             COLOR_PALETTE["secondary"],
             COLOR_PALETTE["warning"],
         ],

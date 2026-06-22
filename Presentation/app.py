@@ -40,14 +40,12 @@ if df is None or df.empty:
 
 # Presentation Header (Scientific Conference style)
 st.markdown(
-    """
-    <div style="margin-bottom: 25px;">
-        <span style="font-size: 0.85rem; letter-spacing: 0.1em; color: #38bdf8; text-transform: uppercase; font-weight: 500;">
-            Conference Paper #1408 | Dynamic Analytics Presentation
-        </span>
-        <hr style="margin: 8px 0 15px 0; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-    </div>
-    """,
+    """<div style="margin-bottom: 25px;">
+<span style="font-size: 0.85rem; letter-spacing: 0.1em; color: #38bdf8; text-transform: uppercase; font-weight: 500;">
+ID: 854 / PAR-T9.3-2: 2 | Track 9.3: "AI in the Lab: Transformations in R&D and the Practice of Science"
+</span>
+<hr style="margin: 8px 0 15px 0; border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+</div>""",
     unsafe_allow_html=True
 )
 
